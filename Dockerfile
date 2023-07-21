@@ -15,7 +15,6 @@ RUN mkdir -p /home/evaluatex/data
 
 RUN rm /var/www/html/index.html
 # Copia i file dalla cartella host "./Atheos" nella cartella del container "/home/atheos"
-COPY ./Atheos /var/www/html
 
 # Imposta i permessi appropriati per gli utenti di Apache
 RUN chown -R www-data:www-data /home/evaluatex/users
