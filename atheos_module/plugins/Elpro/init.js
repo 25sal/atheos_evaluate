@@ -108,55 +108,15 @@ var token = null;
 		// BUILD_METHOD: build main.c file
 		//////////////////////////////////////////////////////////////////////80
 		build: function() {
-			const url = 'http://localhost:8025/build'; // L'URL dell'API
-			const token = localStorage.getItem('jwtToken');
-			fetch(url, {
-				method: 'POST',
-				headers: {
-					'Authorization': `JWT ${token}`
-					}
-				})
-			  .then(response => {
-				// Controlla se la risposta è stata ricevuta con successo (status 200)
-				if (!response.ok) {
-				  throw new Error('Network response was not ok');
-				}
-				return response.json(); // Parsifica la risposta come JSON
-			  })
-			  .then(data => {
-				// Usa i dati ottenuti dalla chiamata API
-				console.log(data);
-			  })
-			  .catch(error => {
-				// Gestisce gli errori della chiamata API
-				console.error('Error:', error);
-			  });
-
+				buildAction();
 				console.log("build");
-
-				
 			},
-		
 			//////////////////////////////////////////////////////////////////////80
 			// TEST_METHOD: build and test main.c file
 			//////////////////////////////////////////////////////////////////////80
 			test: function() {
-			
-				
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-					console.log(this.responseText);
-					
-
-					
-				}
-				};
-				xhttp.withCredentials = true;
-				//xhttp.open("POST", "http://localhost:5000/test", true);
-				//xhttp.send();
-	
-					
+					testAction();
+					console.log("test");
 				},
 			//////////////////////////////////////////////////////////////////////80
 			// DO NOTHING METHOD: it enables the override of the default behaviour with an empty behaviour
@@ -165,42 +125,7 @@ var token = null;
 				console.log("Operation not allowed");
 			},
 			getTraccia: function() {
-				const url = 'http://localhost:8025/exercise_atheos'; // L'URL dell'API
-				const token = localStorage.getItem('jwtToken');
-				fetch(url, {
-					method: 'GET',
-					headers: {
-						'Authorization': `JWT ${token}`
-						}
-					})
-				  .then(response => {
-					// Controlla se la risposta è stata ricevuta con successo (status 200)
-					if (!response.ok) {
-					  throw new Error('Network response was not ok');
-					}
-					return response.json(); // Parsifica la risposta come JSON
-				  })
-				  .then(data => {
-					//get htmlpage field of the json data
-					htmlpage = data.htmlpage;
-				})
-				  .catch(error => {
-					// Gestisce gli errori della chiamata API
-					console.error('Error:', error);
-				  });
-				atheos.modal.load(900, {
-					target: 'elpro',
-					action: 'openDialog',
-					callback: function() {
-						console.log("callback");
-						var tracciaHTML = htmlpage;
-			
-						// Inserisci il codice HTML nel div con ID "Traccia"
-						$('#Traccia').html(tracciaHTML);
-					}
-				});
-				console.log("getTraccia");
-	
+					tracciaAction();
 					
 				},
 
@@ -316,3 +241,85 @@ function loadInterface() {
 
 
 }
+
+
+
+function buildAction() { 
+
+	const url = 'http://localhost:8025/build'; // L'URL dell'API
+	const token = localStorage.getItem('jwtToken');
+	fetch(url, {
+		method: 'POST',
+		headers: {
+			'Authorization': `JWT ${token}`
+			}
+		})
+	  .then(response => {
+		// Controlla se la risposta è stata ricevuta con successo (status 200)
+		if (!response.ok) {
+		  throw new Error('Network response was not ok');
+		}
+		return response.json(); // Parsifica la risposta come JSON
+	  })
+	  .then(data => {
+		// Usa i dati ottenuti dalla chiamata API
+		console.log(data);
+	  })
+	  .catch(error => {
+		// Gestisce gli errori della chiamata API
+		console.error('Error:', error);
+	  });
+
+}
+
+
+function testAction() { 
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+	if (this.readyState == 4 && this.status == 200) {
+		console.log(this.responseText);
+	}
+	};
+	xhttp.withCredentials = true;
+}
+
+
+function tracciaAction() { 
+	const url = 'http://localhost:8025/exercise_atheos'; // L'URL dell'API
+				const token = localStorage.getItem('jwtToken');
+				fetch(url, {
+					method: 'GET',
+					headers: {
+						'Authorization': `JWT ${token}`
+						}
+					})
+				  .then(response => {
+					// Controlla se la risposta è stata ricevuta con successo (status 200)
+					if (!response.ok) {
+					  throw new Error('Network response was not ok');
+					}
+					return response.json(); // Parsifica la risposta come JSON
+				  })
+				  .then(data => {
+					//get htmlpage field of the json data
+					htmlpage = data.htmlpage;
+				})
+				  .catch(error => {
+					// Gestisce gli errori della chiamata API
+					console.error('Error:', error);
+				  });
+				atheos.modal.load(900, {
+					target: 'elpro',
+					action: 'openDialog',
+					callback: function() {
+						console.log("callback");
+						var tracciaHTML = htmlpage;
+			
+						// Inserisci il codice HTML nel div con ID "Traccia"
+						$('#Traccia').html(tracciaHTML);
+					}
+				});
+				console.log("getTraccia");
+	
+}
+
