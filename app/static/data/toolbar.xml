@@ -1,0 +1,24 @@
+<?php 
+  header('Content-Type: application/xml');
+  include("../config.php");
+?>
+<?xml version="1.0" encoding="UTF-8"?>
+<toolbar>
+	<item id="account" type="buttonSelect" img="./account.png" imgdis="./account.png" text="Account"
+		  action="showNewDocumentSelect">
+
+		<item type="button" id="logout" text="Logout" img="./logout.jpeg" action="doOnNewDocument"/>
+	</item>
+
+	<item id="language" type="buttonSelect" img="./language.jpeg" imgdis="./language.jeg" text="Choose Language"
+		  action="showNewDocumentSelect">
+		<item type="button" id="vhdl" text="vhdl" img="./vhdl.jpeg"
+			  action="setLanguage"/>
+		<item type="button" id="c" text="c" img="./c.png"
+			  action="setLanguage"/>
+			  <item type="button" id="cpp" text="c++" img="./c++.jpeg"
+			  action="setLanguage"/>
+	</item>
+	<item id="info" type="button" text="Info" img="./help.gif"/>
+	<item id="info" type="button" text="<?php echo $_SESSION['username'];?>" />
+</toolbar>

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %} Login - EvaluateX {%endblock%}
+
+{%block body%}     
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-12 col-xl-10">
+                <div class="card shadow-lg o-hidden border-0 my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-flex">
+                                <div class="flex-grow-1 bg-login-image" style="background-repeat: no-repeat;
+                                                                                  background-size: 100%;
+                                                                                  background-position: center;background-image: url('../static/img/dogs/image3.png');"></div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h4 class="text-dark mb-4">Welcome Back!:</h4>
+                                    </div>
+                                    <form class="user" method = 'POST'>
+                                        {{form.hidden_tag()}}
+                                             <div class="form-group">
+                                                {{form.email(class='form-control form-control-user', placeholder='Enter Email Address...',id='exampleInputEmail')}}
+                                             </div>
+                                            
+                                             <div class="form-group">
+                                                {{form.password(class='form-control form-control-user', type='password', placeholder='Password',id='exampleInputPassword')}}
+                                            </div>
+                                            <div class="form-group">
+                                                 <div class="custom-control custom-checkbox small">
+                                                     <div class="form-check">
+                                                        {{form.remember_me(class='form-check-input custom-control-input', type='checkbox', id='formCheck-1')}}
+                                                        <label class="form-check-label custom-control-label" for="formCheck-1">Remember Me</label></div>
+                                                 </div>
+                                             </div>
+                                             {{form.submit(class='btn btn-primary btn-block text-white btn-user', type='submit')}}
+                                                                                  
+                                    </form>   
+                                 <div class="text-center"><a class="small" href="{{url_for('user_bp.register')}}">Create an Account!</a></div>
+                                 {%if form.email.errors %}
+                                 {% for error in form.email.errors %}
+                                 <div class="text-center"><div style="color:red">{{error}}</div></div>
+                                 {%endfor%}
+                                 {%endif%}
+                                 {% with messages = get_flashed_messages() %}
+                                 {%if messages %}
+                                 {%for message in messages%}
+                                 <div class="text-center"><div style="color:red">{{message}}</div></div>
+                                 {%endfor%}
+                                 {%endif%}
+                                 {%endwith%}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {%endblock%}

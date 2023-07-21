@@ -1,0 +1,61 @@
+<?php 
+header('Content-Type:application/xml');
+header('Content-Type: application/xml');
+include("../config.php");
+include("../include/utils.php");
+auth_user();
+include_once("../include/DatabaseManager.php");
+$db = new DatabaseManager();
+$checks = $db->getchecks($_SESSION['username']);
+
+$submit="true";
+$msg_consegna="Manca upload della soluzione";
+if(isset($checks) && $checks != NULL){
+    if(!key_exists('uploaded',$checks)) 
+    $msg_consegna="Manca upload della soluzione";
+    else if(!key_exists('built',$checks)|| $checks['built']==0)
+    $msg_consegna="Il programma non compila";
+    else if(!key_exists('execution',$checks)|| $checks['execution']==0)
+         $msg_consegna="Il programma non esegue";
+    else  if(!key_exists('outfile',$checks)|| $checks['outfile']==0)
+        $msg_consegna="Il file output.bin non è stato mai creato";
+    else {
+            $submit="false";
+            if(!key_exists('test',$checks)|| $checks['test']==0)
+            $msg_consegna="Consegna abilitata, ma nessun test concluso con successo";
+            else
+            $msg_consegna="Consegna incoraggiata, almeno un test concluso con successo";
+        }
+}
+
+
+
+
+if(isset($_SESSION["exercise"]))
+    $exId=$_SESSION["exercise"];
+else
+   { $exId=1;
+     $_SESSION["exercise"]=1;
+   }
+  
+$results = $db->getresults($db->get_userid($_SESSION["username"]),$_SESSION["exercise"]);
+if(($results[0]+$results[1])==0)
+{    $tp = "Nessun test eseguito";
+     $tf = "Nessun test eseguito";
+}
+else {    
+    $tp = $results[0];
+    $tf = $results[1];
+};
+
+?>
+page = '<?xml version="1.0" encoding="UTF-8"?>'
+page += '<items>'
+page += '<item type="settings"  labelWidth="80" inputWidth="150" position="absolute" />'
+page += '<item type="button"  name="Test" label="Test" value="Test" width="250" inputLeft="5" inputTop="20" />'
+page += '<item type="input"  name="tp" label="Test Passed" value="<?php echo $tp;?>"  labelWidth="250" labelAlign="left" labelLeft="275" labelTop="5" inputLeft="275" inputTop="21" />'
+page += '<item type="input"  name="tf" label="Test Failed" value="<?php echo $tf?>" labelWidth="150" readonly="true" tooltip="Number of" info="true" labelLeft="550" labelTop="5" inputLeft="550" inputTop="21" />'
+page += '<item type="btn2state"  name="consegna" label="Consegna" labelWidth="150" labelLeft="5" labelTop="80" inputLeft="80" inputTop="74" disabled="<?php echo $submit;?>" tooltip="consegna abilitata se il programma crea il file output.bin" info="true"  />'
+page += '<item type="label"  name="msg_consegna" label="<?php echo  $msg_consegna;?>" labelLeft="140" labelTop="75" inputLeft="80" inputTop="74" labelWidth="200" />'
+page += '<item type="input" name="testlog" label="Test Output" rows="36" value="" width="1050" inputTop="150" labelTop="130" readonly="true" />'
+page += '</items>'

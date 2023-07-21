@@ -1,0 +1,20 @@
+.dhxform_obj_dhx_web div.dhxform_img.btn2state_0 {
+    background-image: url("imgs/button2state/material/toggle_off.png");
+    width: 42px;
+    height: 20px;
+}
+.dhxform_obj_dhx_web div.dhxform_img.btn2state_1 {
+    background-image: url("imgs/button2state/material/toggle_on.png");
+    width: 42px;
+    height: 20px;
+}
+.dhxform_obj_dhx_web div.disabled div.dhxform_img.btn2state_0 {
+    background-image: url("imgs/button2state/toggle_off_dis.png");
+    width: 42px;
+    height: 20px;
+}
+.dhxform_obj_dhx_web div.disabled div.dhxform_img.btn2state_1 {
+    background-image: url("imgs/button2state/toggle_on_dis.png");
+    width: 42px;
+    height: 20px;
+}

@@ -1,0 +1,27 @@
+FROM ubuntu:20.04
+# ENV DEBIAN_FRONTEND=noninteractive 
+RUN mkdir -p /home/evaluatex/users
+RUN apt update
+RUN apt -y upgrade
+RUN apt -y install apt-utils
+RUN apt -y install git ghdl gcc g++ python3-pip
+ARG GIT_UPDATE=unknown
+RUN mkdir -p /home/evaluatex/data
+COPY data /home/evaluatex/data
+RUN chown -R www-data:www-data /home/evaluatex/users
+RUN chown -R www-data:www-data /home/evaluatex/data
+RUN mkdir -p /usr/share/pyevaluate/app
+COPY ./requirements.txt /usr/share/pyevaluate/requirements.txt
+# switch working directory
+WORKDIR /usr/share/pyevaluate
+
+# install the dependencies and packages in the requirements file
+RUN pip install -r requirements.txt
+# COPY app /usr/share/pyevaluate/app
+# COPY app.py usr/share/pyevaluate
+# copy every content from the local file to the image
+
+# COPY 10-ptrace.conf /etc/sysctl.d/10-ptrace.conf
+EXPOSE 5000
+# configure the container to run in an executed manner
+ENV  FLASK_APP=app

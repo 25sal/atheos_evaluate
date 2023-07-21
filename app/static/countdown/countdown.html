@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <script src="vue.min.js"> </script>
+            <script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+            <script src="/static/js/jquery.min.js"> </script>
+ 
+    <style>
+
+body {
+    background:#8fa3b1;
+    background: radial-gradient(ellipse at center,  #94c2cf  0%, #faf9f9 70%);
+    background-size: 100%;
+}
+p {
+    margin: 0;
+    padding: 0;
+}
+#clock {
+    font-family: 'Share Tech Mono', monospace;
+    color: #080101;
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #040c0f;
+    text-shadow: 0 0 20px rgba(10, 175, 230, 1),  0 0 20px rgba(10, 175, 230, 0);
+}.time {
+        letter-spacing: 0.05em;
+        font-size: 24px;
+        padding: 5px 0;
+    }
+    .date {
+        letter-spacing: 0.1em;
+        font-size: 14px;
+    }
+    .text {
+        letter-spacing: 0.1em;
+        font-size: 12px;
+        padding: 20px 0 0;
+    }
+
+    </style>
+
+    </head>
+    <body>
+        <div id="clock">
+            <!--<p class="date">{{ date }}</p>-->
+            <p class="time">{{ time }}</p>
+        </div>
+        <script>
+            var clock = new Vue({
+                el: '#clock',
+                data: {
+                    date: '',
+                    time: ''
+                }
+            });
+            
+            var deadline = new Date();
+
+            checkdeadline();
+            //deadline.setHours(deadline.getHours()+2);
+            var week = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            var timerID = setInterval(updateTime, 1000);
+            setInterval(checkdeadline, 120000);
+            updateTime();
+            function updateTime() {
+                
+               
+                var cd = new Date();
+                var countdown = (deadline.getTime()-cd.getTime())/1000;
+              
+                clock.time = zeroPadding(Math.floor(countdown/3600), 2) + ':' + zeroPadding(Math.floor(countdown/60)%60, 2)+':' + zeroPadding(Math.floor(countdown)%60, 2);
+                clock.date = zeroPadding(cd.getFullYear(), 4) + '-' + zeroPadding(cd.getMonth()+1, 2) + '-' + zeroPadding(cd.getDate(), 2) + ' ' + week[cd.getDay()];
+            };
+            
+            function zeroPadding(num, digit) {
+                var zero = '';
+                for(var i = 0; i < digit; i++) {
+                    zero += '0';
+                }
+                return (zero + num).slice(-digit);
+            }
+            
+            function checkdeadline()
+            {
+                $.ajax
+				  ({
+					 url: '/deadline',
+					 type: 'get',
+					 contentType: false,
+					 processData: false,
+					 async: false,
+					 success: function(response)
+						  {
+                             if(response!="")
+							    deadline = new Date(parseInt(response)*1000);
+
+						   },
+					  });
+
+            }
+            
+                </script>
+    </body>
+</html>

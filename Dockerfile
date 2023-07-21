@@ -1,0 +1,57 @@
+FROM ubuntu:20.04
+
+# Imposta la variabile d'ambiente DEBIAN_FRONTEND su "noninteractive" per evitare interazioni con l'utente
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Installazione delle dipendenze e strumenti di sistema
+RUN mkdir -p /home/evaluatex/users
+RUN apt update
+RUN apt -y upgrade
+RUN apt -y install apt-utils
+RUN apt -y install git ghdl gcc g++ python3-pip apache2 libapache2-mod-php
+
+# Crea una directory per i dati del tuo servizio (se necessario)
+RUN mkdir -p /home/evaluatex/data
+
+RUN rm /var/www/html/index.html
+# Copia i file dalla cartella host "./Atheos" nella cartella del container "/home/atheos"
+COPY ./Atheos /var/www/html
+
+# Imposta i permessi appropriati per gli utenti di Apache
+RUN chown -R www-data:www-data /home/evaluatex/users
+RUN chown -R www-data:www-data /home/evaluatex/data
+
+# Crea una directory per l'applicazione Python
+RUN mkdir -p /usr/share/pyevaluate/app
+
+# Copia il file requirements.txt
+COPY ./requirements.txt /usr/share/pyevaluate/requirements.txt
+
+# Sposta il working directory nella cartella dell'applicazione Python
+WORKDIR /usr/share/pyevaluate
+
+# Installa le dipendenze elencate nel file requirements.txt
+RUN pip install -r requirements.txt
+
+# Copia l'applicazione Python nella directory del container
+COPY app /usr/share/pyevaluate/app
+
+# Copia il file app.py nella directory del container
+COPY app.py /usr/share/pyevaluate
+
+# Copia il file di configurazione di Apache personalizzato
+
+# Abilita il modulo PHP di Apache
+RUN a2enmod php7.4
+
+# Crea la directory per i log di Apache
+RUN mkdir -p /var/log/apache2
+
+# Esponi la porta 5000 per il server Flask e la porta 80 per Apache
+EXPOSE 5000 80
+
+# Imposta la variabile d'ambiente FLASK_APP
+ENV FLASK_APP=app
+
+# Avvia sia Flask che Apache
+CMD service apache2 start && flask run --host=0.0.0.0

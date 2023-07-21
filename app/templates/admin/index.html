@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>{%block title %} {%endblock%}</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+<link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
+
+ <script src="{{url_for('static', filename='codebase/dhtmlx.js')}}" type="text/javascript"></script>
+ <link rel="STYLESHEET" type="text/css" href="{{url_for('static', filename='codebase/dhtmlx.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/untitled.css')}}">
+
+
+
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <style>
+
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0px;
+                overflow: hidden;
+                background-color:white;
+            }
+
+        </style>
+
+
+
+        <script type="text/javascript">
+
+            window.onload = function(){
+
+
+                window.dhx4.skin = 'material';
+    	var main_layout = new dhtmlXLayoutObject(document.body, '2U');
+
+    	var a = main_layout.cells('a');
+    	a.setWidth('200');
+      a.setText('My admin');
+    	a.hideHeader();
+    	var sidebar_2 = a.attachSidebar({template: 'details', width: '200', icons_path: './codebase/imgs_sidebar/', autohide: '', header: ''});
+
+
+
+
+    	var cell_2 = main_layout.cells('b');
+    	cell_2.hideHeader();
+    	var menu_3 = cell_2.attachMenu();
+    	menu_3.setIconsPath('./codebase/imgs/');
+
+    	menu_3.loadStruct('<menu><item type="item" id="menuitem_1" text="Home" /></menu>');
+    	var str = [
+    		{ type:"settings" , labelWidth:80, inputWidth:250, position:"absolute"  },
+    		{ type:"input" ,id:"username", name:"form_input_3", label:"Username", labelWidth:250, required:true, labelLeft:150, labelTop:100, inputLeft:150, inputTop:121  },
+    		{ type:"password" ,id:"password", name:"form_password_1", label:"Password", labelWidth:250, required:true, labelLeft:150, labelTop:175, inputLeft:150, inputTop:196  },
+    		{ type:"button" , name:"form_button_2", label:"Send", value:"Send", width:"75", inputWidth:75, inputLeft:150, inputTop:250  },
+    		{ type:"button" , name:"form_button_3", label:"Reset", value:"Reset",width:"75", inputWidth:75, inputLeft:325, inputTop:250  },
+    		{ type:"label" , name:"form_label_1", label:"Start a new admin session", width:250, labelWidth:250, labelLeft:150, labelTop:50  },
+    		{ type:"label" , name:"form_label_2", label:"Have you forgot the password?", width:250, labelWidth:250, labelLeft:425, labelTop:175  }
+    	];
+    	var form_2 = cell_2.attachForm(str);
+      form_2.attachEvent("onButtonClick", function(id){
+
+if(id=="form_button_3"){
+  form_2.clear();
+}
+else{
+//ora dobbiamo inviare al server username e password.
+var username=jQuery('input[name="form_input_3"]').val();
+var password=jQuery('input[name="form_password_1"]').val();
+jQuery.ajax({
+  url:'./api/accesso.php',
+  method: 'POST',
+  data:{
+    var1:username,var2:password
+  }
+}).done(function(d){
+
+if(parseInt(d)==0)
+  alert("Authentication failed.");
+else
+  window.location.href = "view/accounts.php";
+
+});
+
+
+}
+
+  });
+
+
+            }
+        </script>
+
+
+</head>
+
+<body class="bg-gradient-primary">
+    {%block body%} {%endblock%}
+    <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/chart.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bs-init.js')}}"></script>
+    <script src="{{url_for('static', filename='js/greencharge.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="{{url_for('static', filename='js/theme.js')}}"></script>
+</body>
+
+</html>

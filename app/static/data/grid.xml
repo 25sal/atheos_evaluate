@@ -1,0 +1,44 @@
+<?php
+header('Content-Type: application/xml');
+include("../config.php");
+include("../include/utils.php");
+auth_user();
+include_once("../include/DatabaseManager.php");
+$db = new DatabaseManager();
+
+if(isset($_SESSION["exercise"]))
+    $exId=$_SESSION["exercise"];
+else
+   { $exId=1;
+     $_SESSION["exercise"]=1;
+   }
+$isexam=0;
+if(isset($_SESSION["exams"])) $isexam=1;
+    $exer_folder= $db->getexercisefolder($exId,$isexam);
+
+
+?>
+<?xml version="1.0" encoding="UTF-8"?>
+<rows>
+	<head>
+		<column id="c1" width="*" type="ro" align="left" sort="str">Filename</column>
+		<column id="c2" width="*" type="ro" align="left" sort="str">Date</column>
+	</head>
+	<?php
+
+	$dir= $users_dir."/".$_SESSION["username"]."/".$exer_folder;
+	$files= scandir($dir);
+	$i=1;
+	foreach($files as $file)
+	{
+	   if( filefilter($_SESSION["language"],$file) ){ 
+	    echo '<row id="'.$i.'">';
+	    echo '<cell>'.$file.'</cell>';
+		echo '<cell>'.date("F d Y H:i:s.", filemtime($dir."/".$file)).'</cell></row>';
+	   $i=$i+1;
+	   }
+	
+	}
+	?>
+	
+</rows>

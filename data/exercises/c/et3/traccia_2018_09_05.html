@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 6.3.5.2 (Linux)"/>
+	<meta name="created" content="2017-05-17T12:50:36.656668283"/>
+	<meta name="changed" content="2020-04-25T02:02:13.452585319"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 120%; background: transparent }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-family: "Liberation Sans", sans-serif; font-size: 18pt; font-weight: bold }
+		h1.cjk { font-family: "AR PL SungtiL GB"; font-size: 18pt; font-weight: bold }
+		h1.ctl { font-family: "FreeSans"; font-size: 18pt; font-weight: bold }
+		a:link { color: #000080; so-language: zxx; text-decoration: underline }
+		a:visited { color: #800000; so-language: zxx; text-decoration: underline }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h1 lang="it-IT" class="western" align="center">
+Traccia di Elementi di Programmazione</h1>
+
+
+</p>
+<p lang="it-IT" align="left" style="margin-bottom: 0in; line-height: 100%">
+<br/>
+
+</p>
+<p style="margin-bottom: 0in; line-height: 100%">Sviluppare in
+linguaggio C un programma che:</p>
+
+<ul>
+	<li><p style="margin-bottom: 0in; line-height: 100%">legge n
+	stringhe da un file di testo “input.txt”</p>
+	<li><p style="margin-bottom: 0in; line-height: 100%">per ogni
+	stringa calcola:</p>
+	<ul>
+		<li><p style="margin-bottom: 0in; line-height: 100%">il numero di
+		parole</p>
+		<li><p style="margin-bottom: 0in; line-height: 100%">il numero di
+		caratteri della parola più lunga</p>
+		<li><p style="margin-bottom: 0in; line-height: 100%">il numero di
+		maiuscole 
+		</p>
+		<li><p style="margin-bottom: 0in; line-height: 100%">il numero di
+		minuscole</p>
+	</ul>
+	<li><p style="margin-bottom: 0in; line-height: 100%">per ogni
+	stringa salva in una riga di una matrice di interi i parametri così
+	calcolati</p>
+	<li><p style="margin-bottom: 0in; line-height: 100%">realizzare un
+	vettore di struct, il cui singolo elemento contenga la stringa,
+	l’indice di riga in cui è memorizzata la stringa</p>
+	<p style="margin-bottom: 0in; font-weight: normal; line-height: 100%">
+	<font color="#000000"><font face="Droid Sans Mono, monospace, monospace, Droid Sans Fallback"><font size="2" style="font-size: 10pt"><span style="background: #ffffff"><font color="#0000ff">#define
+	N </font><font color="#098658">100</font></span></font></font></font></p>
+</ul>
+<p style="margin-bottom: 0in; font-weight: normal; line-height: 0.2in">
+<font color="#000000"><font face="Droid Sans Mono, monospace, monospace, Droid Sans Fallback"><font size="2" style="font-size: 10pt"><span style="background: #ffffff"><font color="#0000ff">		struct</font>
+Mystruct{</span></font></font></font></p>
+<p style="margin-bottom: 0in; font-weight: normal; line-height: 0.2in">
+<font color="#000000"><font face="Droid Sans Mono, monospace, monospace, Droid Sans Fallback"><font size="2" style="font-size: 10pt"><span style="background: #ffffff"><font color="#0000ff">		char</font>
+stringa[N];</span></font></font></font></p>
+<p style="margin-bottom: 0in; font-weight: normal; line-height: 0.2in">
+<font color="#000000"><font face="Droid Sans Mono, monospace, monospace, Droid Sans Fallback"><font size="2" style="font-size: 10pt"><span style="background: #ffffff"><font color="#0000ff">		int</font>
+indice;</span></font></font></font></p>
+<p style="margin-bottom: 0in; font-weight: normal; line-height: 0.2in">
+<font color="#000000"><font face="Droid Sans Mono, monospace, monospace, Droid Sans Fallback"><font size="2" style="font-size: 10pt"><span style="background: #ffffff">		};</span></font></font></font></p>
+<ul>
+	<li><p style="margin-bottom: 0in; line-height: 100%">Ordinare il
+	vettore di struct in modo che al primo posto si trovi la stringa con
+	la parola più lunga e salvare I SOLI elementi del vettore in un
+	file binario “output.bin”</p>
+	<p style="margin-bottom: 0in; line-height: 100%"></p>
+</ul>
+
+<p style="margin-bottom: 0in; line-height: 100%"><b>Esempio</b>:</p><p>Stringhe originali:</p>
+<ol>
+	<li><p>“mOnaCo    NAPOLI”</p>
+	<li><p>“roma mILANO pesaro otranto”</p>
+	<li><p>“Prossima Presentazione”</p>
+		<pre>
+	2	6	8 	4
+	4	7	5	11
+	2	13	2	19
+
+	</pre>
+</ol>
+
+<p lang="it-IT" align="left" style="margin-bottom: 0in; font-style: normal; font-weight: normal; line-height: 100%">
+{“Prossima Presentazione”,3}</p>
+<p lang="it-IT" align="left" style="margin-bottom: 0in; font-style: normal; font-weight: normal; line-height: 100%">
+{“mOnaCo    NAPOLI”, 1}</p>
+<p lang="it-IT" align="left" style="margin-bottom: 0in; font-style: normal; font-weight: normal; line-height: 100%">
+{“roma mILANO pesaro”, 2}</p>
+<div title="footer"><p align="center" style="margin-top: 0.2in; margin-bottom: 0in; line-height: 100%">
+	<span style="background: #c0c0c0"><sdfield type=PAGE subtype=RANDOM format=PAGE>1</sdfield></span></p>
+</div>
+</body>
+</html>

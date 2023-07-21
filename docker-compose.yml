@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+   www:
+        image: pyevaluate
+        ports: 
+            - "8025:5000"
+            - "8080:80"
+        links:
+            - db
+        networks:
+            - default
+        volumes:
+            - users:/home/evaluatex/users:consistent
+        cap_add: 
+            - SYS_PTRACE
+        security_opt:
+            - seccomp:unconfined
+        privileged: true
+
+   db:
+        image: mysql
+        ports: 
+            - "3306:3306"
+        environment:
+            - MYSQL_DATABASE=evaluatex
+            - MYSQL_USER=user
+            - MYSQL_PASSWORD=test
+            - MYSQL_ROOT_PASSWORD=test
+        volumes:
+            - ./dump:/docker-entrypoint-initdb.d
+            - persistent:/var/lib/mysql
+        networks:
+            - default
+   phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        links: 
+            - db:db
+        ports:
+            - "8000:80"
+        environment:
+            - MYSQL_USER=user
+            - MYSQL_PASSWORD=test
+            - MYSQL_ROOT_PASSWORD=test
+volumes:
+    persistent:
+    users:
