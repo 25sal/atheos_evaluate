@@ -1,0 +1,41 @@
+{
+    "admin": {
+        "password": "$2y$10$wlSieKeKKShdClkSuGZUsOwc8U4b6FUpYq605oEvHp5BDSvdE66Q6",
+        "resetPassword": false,
+        "activeProject": "\/var\/www\/html\/",
+        "creationDate": "2023-07-13 12:09:56",
+        "lastLogin": "2023-07-14 02:34:20",
+        "permissions": [
+            "configure",
+            "read",
+            "write"
+        ],
+        "userACL": "full"
+    },
+    "test": {
+        "password": "$2y$10$BYyH.PV7hASoLeE4aKZTJOH47iXHcwWo64vx7DyFbLbfU2R3KjTK6",
+        "resetPassword": false,
+        "creationDate": "2023-07-12 23:10:23",
+        "activeProject": "",
+        "lastLogin": "2023-07-16 20:14:46",
+        "permissions": [
+            "read",
+            "write"
+        ],
+        "userACL": "full"
+    },
+    "test123@test123.it": {
+        "password": "$2y$10$7koDzaC1FnEmFOx8obmW4OA0xpoP.\/XnONlw7cWBk2MoM50SqJGnW",
+        "resetPassword": false,
+        "creationDate": "2023-07-14 02:34:36",
+        "activeProject": "",
+        "lastLogin": "2023-07-21 02:30:03",
+        "permissions": [
+            "read",
+            "write"
+        ],
+        "userACL": "full",
+        "activeName": "Test",
+        "activePath": "\/var\/www\/html\/"
+    }
+}

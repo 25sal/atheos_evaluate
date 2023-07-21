@@ -1,0 +1,18 @@
+{
+    "enabled": "true",
+    "uuid": "64afcd74b422b",
+    "version": "v4.3.0",
+    "first_heard": "2023\/07\/13",
+    "last_heard": "2023\/07\/21",
+    "php_version": "7.4.3-4ubuntu2.19",
+    "server_os": "Apache\/2.4.41 (Ubuntu)",
+    "client_os": [
+        "Chrome",
+        "Firefox"
+    ],
+    "timezone": "Pacific\/Midway",
+    "language": "en",
+    "plugins": [
+        "Elpro"
+    ]
+}

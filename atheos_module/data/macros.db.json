@@ -1,0 +1,24 @@
+[
+    {
+        "uuid": "macro-947e-4763-b7b6f2",
+        "title": "Execute",
+        "type": "file",
+        "fTypes": [
+            "sh"
+        ],
+        "command": "%PATH%",
+        "icon": "fas fa-magic",
+        "owner": "ATHEOS"
+    },
+    {
+        "uuid": "macro-53a0-4ebb-56e800",
+        "title": "Execute",
+        "type": "file",
+        "fTypes": [
+            "php"
+        ],
+        "command": "cd %FOLDER% && php %BASENAME%",
+        "icon": "fas fa-magic",
+        "owner": "ATHEOS"
+    }
+]

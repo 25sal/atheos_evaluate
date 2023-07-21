@@ -289,7 +289,7 @@ def getproject(user):
         return None
     else:
 
-        return {"exercise":result[0][0], "language":result[0][1], 'idproject':result[0][2]}
+        return {"idexams":result[0][0], "language":result[0][1], 'exercise':result[0][2]}
 
 def checkUsername(username):
     exist = False

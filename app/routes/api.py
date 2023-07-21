@@ -58,14 +58,43 @@ def login():
 
 
 
-@api_bp.route('/protected_endpoint', methods=['GET'])
+
+
+
+@api_bp.route('/exercise_atheos', methods = ['GET','POST'])
 @jwt_required()
-def protected_endpoint():
+def exercise():
     exId = getproject(current_identity.email)
-    return jsonify({"message": "Hello, {}!".format(exId['idproject'])})
+    #isexam = 0;
+    #if 'exams' in session.keys() and session["exams"]==1:
+    #    isexam = 1
+    extext = getexercisetext(exId['exercise'],1) #TODO: quando implementiamo di nuovo le esercitazioni sostituire 1 con isexam
+    return jsonify({"htmlpage": str(extext)})
 
 
 
+@api_bp.route('/exec_atheos', methods = ['GET','POST'])
+@jwt_required()
+def exec():
+    #if "exercise" not in session.keys():
+    #    session["exercise"] = getexercises(session["language"], 0)[0][0]
+    #isexam = 0;
+    #if 'exams' in session.keys() and session["exams"]==1:
+    #    isexam = 1
+    exId = getproject(current_identity.email)
+    exer_folder = getexercisefolder(exId['exercise'], 1)[0]  #TODO: quando implementiamo di nuovo le esercitazioni sostituire 1 con isexam
+    user_folder = Config.users_dir + "/" + current_identity.email + "/" + exer_folder
+    ex_folder = Config.data_dir+'/exercises/'+exer_folder
+    logger.debug(session["language"], user_folder, ex_folder)
+    checker = Checker(current_identity.email,exId["language"],exId["exercise"])
+    results = checker.check(exId["language"], user_folder, ex_folder )
+    logger.debug(checker.checks)
+    # save checks
+    for key in checker.checks.keys():
+        savechecks(current_identity.email, key, checker.checks[key],exId["exercise"])
+    if exId["language"] == 'c' or exId["language"] == 'cpp':
+        savetestresult(base.get_userid(current_identity.email), results[1:], exId["exercise"])
+    return results[0]
 
 
 
