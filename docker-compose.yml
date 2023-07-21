@@ -11,7 +11,7 @@ services:
             - default
         volumes:
             - users:/home/evaluatex/users:consistent
-            - ./Atheos:/var/www/html
+            - ./atheos_module:/var/www/html
         cap_add: 
             - SYS_PTRACE
         security_opt:
