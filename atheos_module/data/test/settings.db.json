@@ -1,3 +1,5 @@
 {
-    "sidebars.sb-right-width": "594px"
+    "sidebars.sb-right-width": "15px",
+    "sidebars.sb-left-width": "322px",
+    "project.dockOpen": "true"
 }

@@ -134,6 +134,20 @@ var token = null;
 
 })();
 
+function apriScheda(evt, nomeScheda) {
+	var i, testoscheda, pulsante;
+	console.log("hello");
+	testoscheda = document.getElementsByClassName("testoscheda");
+	for (i = 0; i < testoscheda.length; i++) {
+	  testoscheda[i].style.display = "none";
+	}
+	pulsante = document.getElementsByClassName("pulsante");
+	for (i = 0; i < pulsante.length; i++) {
+	  pulsante[i].className = pulsante[i].className.replace(" active", "");
+	}
+	document.getElementById(nomeScheda).style.display = "block";
+	evt.currentTarget.className += " active";
+  }
 
 
             
@@ -141,7 +155,7 @@ function loadInterface() {
 	ul_checks = '<table style="text-align:center;"><tbody><tr><td>build</td><td>exec</td><td>outfile</td><td>test</td></tr>';
 	ul_checks += '<tr><td><i class="fas fa-archive"></i></td><td><i class=\"fas fa-archive\"></i></td><td><i class=\"fas fa-archive\"></i></td><td><i class=\"fas fa-archive\"></i></td></tr></tbody></table>';
 	out_wind = '<div id="evaluate_out"><div class="title"><h2>Test Output</h2> <i id="test-collapse" class="fas fa-chevron-circle-down"></i></div><div class="content">'+ul_checks+'</div>';
-	logs_space = '<div id="logs"><div class="title"><h2>Test Output</h2> <i id="test-collapse" class="fas fa-chevron-circle-down"></i></div><div class="content">'+ul_checks+'</div>';
+	logs_space = '<div id="logs"><div class="title"><h2>Test Output</h2> <i id="test-collapse" class="fas fa-chevron-circle-down"></i></div><div class="content"><div class="scheda"><button class="pulsante" onclick="apriScheda(event, \'HTML\')" id="schedaPredefinita">HTML</button><button class="pulsante" onclick="apriScheda(event, \'CSS\')">CSS</button><button class="pulsante" onclick="apriScheda(event, \'JS\')">JS</button><button class="pulsante" onclick="apriScheda(event, \'PHP\')">PHP</button></div></div>';
 
 	$('#SBRIGHT').append(out_wind);
 	document.getElementById("workspace").style.gridTemplateRows = "auto 1fr 1fr auto";
@@ -163,8 +177,13 @@ function loadInterface() {
 	//create div to contain tex
 	const textDiv = document.createElement('div');
 	textDiv.classList.add('title');
-	textDiv.innerHTML = '<h2>Logs</h2>';
+	textDiv.innerHTML = '<div class="scheda"><button class="pulsante" onclick="apriScheda(event, \'HTML\')" id="schedaPredefinita">HTML</button><button class="pulsante" onclick="apriScheda(event, \'CSS\')" id="schedaCSS">CSS</button><button class="pulsante" onclick="apriScheda(event, \'JS\')" id="schedaJS">JS</button></div>';
 	newArea.appendChild(textDiv);
+	document.getElementById("schedaPredefinita").innerHTML = "<div id=\"HTML\" class=\"testoscheda\"><h2>HTML</h2><p>HyperText Markup Language</p></div>";
+	document.getElementById("schedaCSS").innerHTML = "<div id=\"HTML\" class=\"testoscheda\"><h2>HTML</h2><p>HyperText Markup Language</p></div>";
+	document.getElementById("schedaJS").innerHTML = "<div id=\"HTML\" class=\"testoscheda\"><h2>HTML</h2><p>HyperText Markup Language</p></div>";
+
+
 
 	let isDragging = false;
 
