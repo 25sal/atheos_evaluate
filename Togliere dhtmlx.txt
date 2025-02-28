@@ -1,0 +1,9 @@
+1) Togliere dhtmlx 
+2) Aggiungere Bottone per pulire sessione (l'azione che già è associata al bottone pulisce il db, aggiungi script per pulire le cartelle che ti ha passato il prof)
+3) Aggiungere pagina per associare un Excel ad ogni turno. Per ogni turno esegui l'operazione che sta nel singolo file, modifica il turno e le password generate salvale in file appendendo il turno al nome file.
+4) Creare maschera per attivare/disattivare delle tracce
+5) Per assegnare le tracce agli utenti, apri la maschera e selezionare il turno , appaiono tutti gli utenti del turno, criteri di selezione sulla matricola: starts_with_a13, starts_with_b, starts_with_a18, si apre un'altra maschera per la selezione delle tracce da assegnare.
+esegui il codice che è già presente sotto admin/projects
+6) creare maschera per cambio pwd utenti
+7) Aggiungere funzionalità per cambiare il progetto assegnato ad un utente (eliminare cartella utente atheos, eliminare cartella data/users, modificare il db e i file json di atheos, aggiungere nuova traccia o eliminare l'utente dalla prova (eliminando tutto quanto descritto sopra)
+8) recuperare i checks e mostrarli nella pagina di recap che hai fatto già
