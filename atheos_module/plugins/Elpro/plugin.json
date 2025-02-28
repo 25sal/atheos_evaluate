@@ -6,19 +6,30 @@
 	"status": "available",
 	"version": "v1.0.0",
 	"url": "https://github.com/Atheos/Plugin-Template",
-	"rightbar": [{
+	"rightbar": [
+        {
+			"action": "atheos.elpro.reload_page();",
+			"icon": "icon-info-circled",
+			"title": "Reload"
+		},	
+       {
 		"action": "atheos.elpro.build();",
-		"icon": "icon-info-circled",
+		"icon": "fas fa-tools",
 		"title": "Build"
 	},
 	{
 		"action": "atheos.elpro.test();",
-		"icon": "icon-info-circled",
+		"icon": "fas fa-play",
 		"title": "Test"
 	},	{
 		"action": "atheos.elpro.getTraccia();",
-		"icon": "icon-info-circled",
+		"icon": "fas fas fa-file-alt",
 		"title": "Traccia"
+	},
+	{
+		"action": "atheos.elpro.restoreInput();",
+		"icon": "fas fa-trash-restore",
+		"title": "Restore input.txt"
 	}
 ],
 	"contextmenu": [{

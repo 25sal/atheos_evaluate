@@ -223,6 +223,14 @@ class Filemanager {
 				continue;
 			}
 
+			if(!is_dir($path."/".$object)){
+				$validExtensions = array("txt", "c", "java", "py", "cpp", "vhd", "vhdl");	
+				$extension = pathinfo($object, PATHINFO_EXTENSION);
+				if (!in_array(strtolower($extension), $validExtensions)) 
+				  continue;
+				}
+
+
 			if (is_dir($path."/".$object)) {
 				$type = "folder";
 				$size = count(glob($path."/".$object."/*"));

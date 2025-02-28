@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <string.h>
+#define N 100
+
+#define N 100
+
+struct mystruct{
+char stringa[N];
+int indice;
+};
+
+void leggi_stringa(s[N]);
+int main(){
+	char s[N];
+	int n;
+	
+	
+	
+	FILE *fp =fopen("input.txt","r");
+	if(fp=NULL){
+		printf("errore nell'apertura");
+	}
+    while(fgets(s,N,fp)!=NULL){
+    	parola=strtok(s," ");
+    	while(parola!=NULL){
+    		n=strlen(parola);
+    		parola=strtok(s,NULL);
+    		n1=strlen(parola);
+    	}
+    }
+   
+    
+    return 0;
+}
+
+
+
+
+
+
+
+

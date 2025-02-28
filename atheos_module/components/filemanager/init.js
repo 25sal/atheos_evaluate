@@ -21,10 +21,10 @@
 
 		clipboard: '',
 
-		noOpen: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'exe', 'zip', 'tar', 'tar.gz'],
+		noOpen: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'exe', 'zip', 'tar', 'tar.gz','log'],
 
 		openTrigger: 'click',
-		showHidden: true,
+		showHidden: false,
 
 		init: function() {
 			// Initialize node listener

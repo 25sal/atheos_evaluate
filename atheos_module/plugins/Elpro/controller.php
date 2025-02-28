@@ -11,22 +11,28 @@
 //////////////////////////////////////////////////////////////////////////////80
 
 require_once "class.elpro.php";
-require_once "../../common.php";
-$activeUser = SESSION("user");
-$Collab = new Elpro($activeUser);
+//require_once "../../common.php";
+$plg = new Elpro(SESSION("user"));
 
-Common::send("notice", "Template controller is an example only");
+//Common::send("notice", "Template controller is an example only");
 
-
+$api_key = '1234';
 
 // Chiudi la richiesta
-curl_close($request);
+//curl_close($request);
 //////////////////////////////////////////////////////////////////////////////80
 // Get Action
 //////////////////////////////////////////////////////////////////////////////80
 switch ($action) {
-
-	//////////////////////////////////////////////////////////////////////////80
+	case "login":
+		$token = $plg->py_authenticate($api_key);
+		Common::send("JWT_token", $token);
+		break;
+	case "forced_logout":
+		$plg->notify_event('forced_logout');
+		break;
+	////////
+	//////////////////////////////////////////////////////////////////80
 	// Default: Invalid Action
 	//////////////////////////////////////////////////////////////////////////80
 	case "test":

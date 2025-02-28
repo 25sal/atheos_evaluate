@@ -2,16 +2,89 @@ from app.models import db
 from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy import text
+import logging
+from werkzeug.utils import cached_property
+from flask_principal import identity_loaded, RoleNeed, UserNeed
+from flask_sqlalchemy import BaseQuery
+
+logger = logging.getLogger(__name__)
+logging.basicConfig()
+
+# MODELS
+class UserQuery(BaseQuery):
+
+    def from_identity(self, identity):
+        """
+        Loads user from flask.ext.principal.Identity instance and
+        assigns permissions from user.
+
+        A "user" instance is monkeypatched to the identity instance.
+
+        If no user found then None is returned.
+        """
+
+        try:
+            user = self.get(identity.id)
+        except ValueError:
+            user = None
+
+        if user:
+            identity.provides.update(user.provides)
+
+        identity.user = user
+
+        return user
 
 # Models
+class APIKey(db.Model):
+    __tablename__ = 'apikey'
+    id = db.Column(db.Integer, primary_key=True)
+    api_key = db.Column(db.String(128), unique=True, index=True)
+    owner = db.Column(db.Text)
+    ip = db.Column(db.Text)
+
+
+
+
 class Users(UserMixin, db.Model):
+    MEMBER = 100
+    ADMIN = 300
+
     __tablename__ = 'users'
+
+    query_class = UserQuery
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password = db.Column(db.String(128), nullable = False)
     access_token = db.Column(db.String(128), nullable = True)
     created_at = db.Column(db.DateTime, default=datetime.now())
+    role = db.Column(db.Integer, default=100)
+    
+    @property
+    def is_member(self):
+        return self.role == self.MEMBER
 
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
+
+    @cached_property
+    def permissions(self):
+        return self.Permissions(self)
+
+    @cached_property
+    def provides(self):
+        needs = [RoleNeed('authenticated'), UserNeed(self.id)]
+
+        if self.is_member:
+            needs.append(RoleNeed('member'))
+
+        if self.is_admin:
+            needs.append(RoleNeed('admin'))
+
+        return needs
+    
 class Users_results(db.Model):
     __tablename__ = 'users_results'
     id = db.Column(db.Integer, primary_key=True)
@@ -238,16 +311,17 @@ def savechecks( iduser, parameter,value, exercise=-1):
         return save_checks_test(get_userid(iduser),exercise,parameter,value)
     else:
         idproject = getproject(iduser)
-    t = text("SELECT parameter FROM checks  where id_exam= :val1 and parameter= .val2")
-    db.session.execute(t,{'val1':idproject['idproject'],'val2':parameter}).fetchall()
-    count = db.session.rowcount()
+    t = text("SELECT parameter FROM checks  where id_exam= :val1 and parameter= :val2")
+
+    results = db.session.execute(t,{'val1':idproject['idexams'],'val2':parameter}).fetchall()
+    count = len(results)
     if(count==0):
         t2 = text("INSERT INTO checks  VALUES (:val1,:val2,:val3)")
-        db.session.execute(t2,{'val1':idproject['idproject'],'val2':parameter,'val3':value})
+        db.session.execute(t2,{'val1':idproject['idexams'],'val2':parameter,'val3':value})
         db.session.commit()
     else:
         t3 = text('UPDATE checks set value= :val1 where parameter=:val2 and id_exam=:val3')
-        db.session.execute(t3,{'val1':value,'val2':parameter,'val3':idproject['idproject']})
+        db.session.execute(t3,{'val1':value,'val2':parameter,'val3':idproject['idexams']})
         db.session.commit()
         checksaved = True
     return checksaved
@@ -269,16 +343,15 @@ def getchecks( iduser, exercise=-1):
         return get_checks_test(get_userid(iduser),exercise)
     else:
         idproject = getproject(iduser)
-
     t = text('SELECT parameter,value FROM checks  where id_exam=:val')
-    result = db.session.execute(t,{'val':idproject['idproject']}).fetchall()
+    result = db.session.execute(t,{'val':idproject['idexams']}).fetchall()
     count = len(result)
     if(count==0):
         return None
     else:
         response = {}
         for res in result:
-            response[res[0]] = result[1]
+            response[res[0]] = res[1]
         return response
         
 def getproject(user):
@@ -302,10 +375,100 @@ def checkUsername(username):
  
 # create table
 
-def saveAccessToken(access_token, id):
+def getAccessToken(user_id):
+    t = text('SELECT access_token FROM  users  WHERE id=:val')
+    result = db.session.execute(t, {'val':user_id}).fetchall()
+    count = len(result)
+    print(result,count,user_id)
+    if  count>0:
+        return result[0]
+
+def saveAccessToken(access_token, user_id):
+
     t = text('UPDATE users set access_token=:val1 where id=:val2')
-    db.session.execute(t,{'val1':access_token,'val2':id})
+    db.session.execute(t,{'val1':access_token.decode("utf-8"),'val2':user_id})
+    db.session.commit()
+   
+      
+
+def list_res_accounts():
+    query = text("SELECT user, first_name,second_name, checked, user_group from reserved_users");
+    result = db.session.execute(query).fetchall()
+    if len(result) >0:
+        return result
+def list_logged_accounts():
+    query = text("SELECT id, email ,'uknown', role from users");
+    result = db.session.execute(query).fetchall()
+    if len(result) > 0:
+        return result
+
+def delete_res_accounts(accounts):
+    for account in accounts:
+        query = text("DELETE FROM reserved_users WHERE user = :val")
+        db.session.execute(query, {'val':account})
+
+
+def delete_all():
+    query = 'delete  from checks; delete  from checks_test; delete from test_results;' \
+            ' delete  from connections; delete  from projects; delete from users; delete from reserved_users'
+    db.session.execute(query)
+    return 0
+
+
+def list_projects():
+    query = text("SELECT idexams, userid,  exercise , name, language, checked from projects");
+    result = db.session.execute(query).fetchall()
+    if len(result) > 0:
+        return result
+
+def create_reservations(users,set_passwd=True):
+    for i in range(len(users)):
+        query = text("INSERT into reserved_users  (user,password,first_name,second_name,datetime,  checked) \
+                VALUES ( :matr,:passwd,:name, :surname, :datetime,  null)")
+        db.session.execute(query,{'matr':users[i][0],'surname':users[i][1],'name':users[i][2], 'datetime': '2023-09-01 00:00:00',  'passwd':users[i][5], })
+        db.session.commit()
+
+def create_bc_passwords(users):
+    for i in range(len(users)):
+        query = text("INSERT INTO atheos_users  VALUES (:val1,:val2)")
+        db.session.execute(query,{'val1':users[i][0],'val2':users[i][1]})
+        db.session.commit()
+
+def create_projects(users, lang, test_name, description):
+    print(users)
+    for user in users:
+        query = text("INSERT projects (userid,name,description,language,exercise) \
+            VALUES (:userid,:name, :desc,:lang,:exercise)")
+        db.session.execute(query,{'userid':user[0],'name':test_name,'desc':description, 'lang': lang,  'exercise':int(user[1])})
+        db.session.commit()
+
+def delete_projects(ids):
+    query = text("DELETE FROM projects where idexams=:project")
+    for id in ids:
+        db.session.execute(query,{'project':id})
     db.session.commit()
 
+
+def clear_session():
+    db.session.execute(text("delete  from checks;"));
+    db.session.execute(text("delete  from checks_test;"));
+    db.session.execute(text("delete from test_results;"));
+    db.session.execute(text("delete  from connections;"));
+    db.session.execute(text("delete  from projects where idexams>1;"));
+    db.session.execute(text("delete from atheos_users;"));
+    db.session.execute(text("delete from users where role=100;"));
+    db.session.execute(text("delete from reserved_users;"));
+    db.session.commit()
+
+def enroll_reserved_user(user):
+    t = text('INSERT INTO users VALUES(NULL, :userid,:pwd,NULL,:datet,300)')
+    db.session.execute(t,{'userid':user.user, 'pwd':user.password, 'datet':datetime.now()})
+    db.session.commit()
+    return Users.query.filter_by(email=user.user).first()
+
+def log_event(user_id,event,info='NULL'):
+    t = text('INSERT INTO logs VALUES(NULL, :userid,:event,:info)')
+    db.session.execute(t,{'userid':user.user, 'event':event, 'info':info})
+    db.session.commit()
 
 

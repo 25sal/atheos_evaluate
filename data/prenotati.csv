@@ -1,0 +1,34 @@
+GRUPPO_GIUD_COD,305558_1,SUBSET,11,FLD_LIV_LINGUE,,,,,,,,,
+CDS_ID,10364,,,,,,,,,,,,
+AD_ID,15606,,,,,,,,,,,,
+APP_ID,29,,,,,,,,,,,,
+FIRST_ROW,23,FIRST_DYN_COL,8,,,,,,,,,,
+Attività Didattica [COD],,,,Corso di Studio [COD],,,,,,,,,
+ELEMENTI DI PROGRAMMAZIONE [A13050],,,,INGEGNERIA BIOMEDICA [B04],,,,,,,,,
+ELEMENTI DI PROGRAMMAZIONE [A13050],,,,INGEGNERIA ELETTRONICA E INFORMATICA [A13],,,,,,,,,
+ELEMENTI DI PROGRAMMAZIONE - CALCOLATORI ELETTRONICI [A13108],,,,INGEGNERIA ELETTRONICA E INFORMATICA [A13],,,,,,,,,
+ELEMENTI DI PROGRAMMAZIONE - CALCOLATORI ELETTRONICI [A13006],,,,INGEGNERIA ELETTRONICA E INFORMATICA [A13],,,,,,,,,
+,,,,,,,,,,,,,
+Sessioni,,,Sessione estiva [01/05/2023 - 30/09/2023],,,,,,,,,,
+Descrizione Appello,,,Prova di Programmazione C,,,,,,,,,,
+Tipo di Prova,,,Scritto,,,,,,,,,,
+Prenotazione (dal-al),,,30/08/2023 - 06/09/2023,,,,,,,,,,
+Date Appello,,,13/09/2023 - 09:30:00 - Nessun partizionamento - Prova di Programmazione C - VIA MICHELANGELO,,,,,,,,,,
+Totale Studenti iscritti,,,11,,,,,,,,,,
+,,,,,,,,,,,,,
+Tipo Esito,,,Voto in trentesimi (31 = 30L, ASS = Assente, 0 = Insufficiente, RIT = Ritirato),,,,,,,,,,
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+Elenco Studenti Iscritti all'Appello,,,,,,,,,,,,,
+#,,Matricola,Cognome,Nome,Anno Freq.,CFU,,Esito,Domande d'esame,Data superamento,Nota per lo studente,Presa Visione,Email
+1,,A13002726,CIRIELLO,CHRISTIAN PIO,2021/2022,9,204630,,,,,N,christianpio.ciriello@studenti.unicampania.it
+2,,B04000073,ESPOSITO,MARIAVIRGINIA,2022/2023,9,228991,,,,,N,mariavirginia.esposito@studenti.unicampania.it
+3,,B04000038,LOMBARDI,ROSSELLA,2022/2023,9,228444,,,,,N,rossella.lombardi@studenti.unicampania.it
+4,,A13002997,MOZZILLO,SALVATORE,2022/2023,9,228390,,,,,N,salvatore.mozzillo2@studenti.unicampania.it
+5,,A13001721,NATALE,MICHELE,2017/2018,9,176264,,,,,N,michele.natale3@studenti.unicampania.it
+6,,A13001756,PAGANO,SALVATORE JUNIOR,2017/2018,9,175409,,,,,N,salvatorejunior.pagano1@studenti.unicampania.it
+7,,B04000001,PICCERILLO,RAFFAELE,2022/2023,9,225241,,,,,N,raffaele.piccerillo@studenti.unicampania.it
+8,,A13003001,PONDURNO,ANGELO,2022/2023,9,227803,,,,,N,angelo.pondurno@studenti.unicampania.it
+9,,A13002540,RAUCCIO,VINCENZO PIO,2020/2021,9,204028,,,,,N,vincenzopio.rauccio@studenti.unicampania.it
+10,,A13001399,SAGLIOCCO,GIUSEPPE,2016/2017,9,166058,,,,,N,giuseppe.sagliocco1@studenti.unicampania.it
+11,,B04000041,SCIALLA,DANIELE,2022/2023,9,228409,,,,,N,daniele.scialla@studenti.unicampania.it

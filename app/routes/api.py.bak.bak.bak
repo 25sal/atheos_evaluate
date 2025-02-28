@@ -1,0 +1,204 @@
+from flask import render_template, redirect, url_for, flash, request, session, make_response, Blueprint, jsonify
+from  app.models import base
+from app.models import db
+from app.models.base import Users, APIKey, Reserved_users
+from app.forms import LoginForm, RegistrationForm
+from datetime import timedelta
+from werkzeug.security import generate_password_hash, check_password_hash 
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
+from app.models.base import getAccessToken, get_userid, getresults, getproject, getexercises, getexercisefolder, getchecks, getexercisetext, savechecks, savetestresult
+import json
+import glob
+import os
+import time, calendar
+from app.config import Config
+import shutil
+from app.checker import Checker
+import logging
+from flask_jwt import JWT, jwt_required, current_identity
+import sys
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import set_access_cookies
+from flask_jwt_extended import unset_jwt_cookies
+logger = logging.getLogger(__name__)
+logging.basicConfig()
+
+login_manager=LoginManager()
+
+api_bp =  Blueprint('api_bp', __name__)
+
+jwt = ''
+
+def set_app(app):
+    global jwt
+    app = app
+    jwt = JWTManager(app)
+
+def authenticate(email):
+    user = Users.query.filter_by(email=email).first()
+    if user:
+        return user
+    else:
+        r_user = Reserved_users.query.filter_by(user=email).first()
+        if r_user:
+            return base.enroll_reserved_user(r_user)
+
+    
+def identity(payload):
+    user_id = payload['identity']
+    return Users.query.get(user_id)
+
+
+
+@api_bp.route('/auth_token', methods=['POST'])
+def login():
+    data = request.form
+    user_id = data.get('user_id')
+    apikey = data.get('api_key')
+
+    # Verifica le credenziali e genera il token JWT
+   
+  
+    provider = APIKey.query.filter_by(api_key=apikey).first()
+    if provider:
+        user = authenticate(user_id)       
+        if user:
+            cur_access_token = getAccessToken(user.id)
+            '''
+            if cur_access_token is not None:
+               return jsonify({"message": "second authentication disabled"})
+            '''
+            access_token = create_access_token(identity=user.email)
+            print(access_token)
+            #base.saveAccessToken(access_token,user.id)
+            '''
+            should return false if token already saved
+            in this case should return "second authentication disabled"
+            '''
+            return jsonify({"access_token": str(access_token)})
+
+    return jsonify({"message": "Invalid credentials"}), 401
+
+
+
+
+
+
+@api_bp.route('/api/exercise', methods = ['GET','POST'])
+@jwt_required()
+def exercise():
+    print(get_jwt()["exp"])
+
+    exId = getproject(get_jwt_identity())
+    #isexam = 0;
+    #if 'exams' in session.keys() and session["exams"]==1:
+    #    isexam = 1
+    print(get_jwt()["exp"])
+    extext = getexercisetext(exId['exercise'],1) #TODO: quando implementiamo di nuovo le esercitazioni sostituire 1 con isexam
+    return jsonify({"htmlpage": str(extext)})
+
+
+
+@api_bp.route('/api/test', methods = ['GET','POST'])
+@jwt_required()
+def exec():
+    reply = {}
+    exId = getproject(get_jwt_identity())
+    exer_folder  = str(getexercisefolder(exId['exercise'], Config.exams)[0])
+    
+    user_folder = Config.users_dir + "/" + get_jwt_identity() + "/" + exer_folder
+    print(user_folder, exer_folder, file=sys.stderr)
+    logs = ""
+    if os.path.isdir(user_folder):
+        checker = Checker(get_jwt_identity(),exId["language"],exId['exercise'])
+        logs = checker.api_checker(user_folder, exer_folder)
+        reply['build_logs'] = logs[0]
+        reply['exec_logs'] = logs[1]
+        reply['test_logs'] = logs[2]
+        reply['passed'] = logs[3]
+        reply['failed'] = logs[4]
+        savetestresult(get_userid(get_jwt_identity()),logs[3:5],exId['exercise'])
+        for key in checker.checks.keys():
+            savechecks(get_jwt_identity(), key, checker.checks[key])
+            reply[key] = checker.checks[key]
+        return jsonify(reply)
+    reply['test_logs'] = user_folder + exer_folder
+    reply['passed'] = 0
+    reply['failed'] =  0
+    return jsonify(reply)
+
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+
+
+@api_bp.route("/build", methods = ['POST'])
+@jwt_required()
+def build():
+    exId = getproject(get_jwt_identity())
+    
+    exer_folder  = getexercisefolder(exId['exercise'], Config.exams)
+    print(exer_folder, file=sys.stderr)
+    user_folder = Config.users_dir + "/" + get_jwt_identity() + "/" + str(exer_folder[0])
+    logs = ""
+    if os.path.isdir(user_folder):
+        checker = Checker(get_jwt_identity(),exId["language"],exId['exercise'])
+        res = checker.c_builder(user_folder, exer_folder)
+        for key in checker.checks.keys():
+            savechecks(get_jwt_identity(), key, checker.checks[key], exId['exercise'])
+    return res[1]
+
+
+'''
+@api_bp.route('/api/exercise', methods = ['GET','POST'])
+@jwt_required
+def exercise():
+    if "exercise"  not in session.keys():
+        exId = getproject(current_identity.email)
+        session["exercise"]=exId['exercise']
+    return getexercisetext(session["exercise"],1)
+'''
+
+@api_bp.route('/api/results', methods = ['GET','POST'])
+@jwt_required()
+def api_results():
+    checks = getchecks(get_jwt_identity())
+    if checks is None:
+        return json.dumps({'success': False})
+   
+    results = getresults(get_userid(get_jwt_identity()),getproject(get_jwt_identity())['exercise'])
+    if len(results) > 0:
+        if results[0]+results[1] == 0:
+            tp = "Nessun test eseguito"
+            tf = "Nessun test eseguito"
+        else:
+            tp = results[0]
+            tf = results[1]
+        checks['passed'] = tp
+        checks['failed'] = tf
+  
+    return json.dumps(checks)
+
+
+@api_bp.route('/api/notify', methods = ['POST'])
+def notify_event():
+    data = request.form
+    user_id = data.get('user_id')
+    apikey = data.get('api_key')
+    event = data.get('event')
+    info = data.get('info')
+    provider = APIKey.query.filter_by(api_key=apikey).first()
+    if provider:
+        log_event(user_id,event,info)
+        return jsonify({"message": "event_stored"})
+    return jsonify({"message": "notification error"})

@@ -1,7 +1,7 @@
 var settings = getSettings();
 
-context_menu_2 = new dhtmlXMenuObject();
-	context_menu_2.setIconsPath('./satic/codebase/imgs/');
+    context_menu_2 = new dhtmlXMenuObject();
+	context_menu_2.setIconsPath('./static/codebase/imgs/');
 	context_menu_2.renderAsContextMenu();
 
 	if(settings.language=="vhdl")

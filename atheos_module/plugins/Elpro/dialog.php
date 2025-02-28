@@ -15,7 +15,7 @@ switch ($action) {
 	case "openDialog":
 		?>
 		<label class="title"><i class="fas fa-cog"></i><?php echo "Traccia" ?></label>
-		<div id="Traccia">
+		<div style="background-color:#FFFFFF;color:#000000" id="Traccia">
 
 		<div>
 		<?php

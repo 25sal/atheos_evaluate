@@ -3,12 +3,13 @@
     "uuid": "64afcd74b422b",
     "version": "v4.3.0",
     "first_heard": "2023\/07\/13",
-    "last_heard": "2023\/07\/21",
-    "php_version": "7.4.3-4ubuntu2.19",
+    "last_heard": "2025\/02\/26",
+    "php_version": "7.4.3-4ubuntu2.28",
     "server_os": "Apache\/2.4.41 (Ubuntu)",
     "client_os": [
         "Chrome",
-        "Firefox"
+        "Firefox",
+        "Safari"
     ],
     "timezone": "Pacific\/Midway",
     "language": "en",

@@ -1,1 +1,152 @@
-[]
+[
+    {
+        "user": "test",
+        "path": "\/home\/evaluatex\/users\/test\/c\/et2\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000001",
+        "path": "\/home\/evaluatex\/users\/a13000001\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000001",
+        "path": "\/home\/evaluatex\/users\/a13000001\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000017",
+        "path": "\/home\/evaluatex\/users\/a13000017\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000002",
+        "path": "\/home\/evaluatex\/users\/a13000002\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000002",
+        "path": "\/home\/evaluatex\/users\/a13000002\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000003",
+        "path": "\/home\/evaluatex\/users\/a13000003\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000024",
+        "path": "\/home\/evaluatex\/users\/a13000024\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000007",
+        "path": "\/home\/evaluatex\/users\/a13000007\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000006",
+        "path": "\/home\/evaluatex\/users\/a13000006\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000005",
+        "path": "\/home\/evaluatex\/users\/a13000005\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000005",
+        "path": "\/home\/evaluatex\/users\/a13000005\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000006",
+        "path": "\/home\/evaluatex\/users\/a13000006\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000012",
+        "path": "\/home\/evaluatex\/users\/a13000012\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000012",
+        "path": "\/home\/evaluatex\/users\/a13000012\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000009",
+        "path": "\/home\/evaluatex\/users\/a13000009\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000009",
+        "path": "\/home\/evaluatex\/users\/a13000009\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000011",
+        "path": "\/home\/evaluatex\/users\/a13000011\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000011",
+        "path": "\/home\/evaluatex\/users\/a13000011\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000016",
+        "path": "\/home\/evaluatex\/users\/a13000016\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000016",
+        "path": "\/home\/evaluatex\/users\/a13000016\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000013",
+        "path": "\/home\/evaluatex\/users\/a13000013\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000013",
+        "path": "\/home\/evaluatex\/users\/a13000013\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000015",
+        "path": "\/home\/evaluatex\/users\/a13000015\/c\/et3\/input.txt",
+        "status": "active"
+    },
+    {
+        "user": "a13000015",
+        "path": "\/home\/evaluatex\/users\/a13000015\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000007",
+        "path": "\/home\/evaluatex\/users\/a13000007\/c\/et3\/main.c",
+        "status": "inFocus"
+    },
+    {
+        "user": "a13000008",
+        "path": "\/home\/evaluatex\/users\/a13000008\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000024",
+        "path": "\/home\/evaluatex\/users\/a13000024\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000014",
+        "path": "\/home\/evaluatex\/users\/a13000014\/c\/et3\/main.c",
+        "status": "active"
+    },
+    {
+        "user": "a13000003",
+        "path": "\/home\/evaluatex\/users\/a13000003\/c\/et3\/input.txt",
+        "status": "inFocus"
+    }
+]

@@ -1,115 +1,284 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>{%block title %} {%endblock%}</title>
+    <title>Admin Panel</title>
+    <!-- Bootstrap core -->
     <link rel="stylesheet" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
-<link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
 
- <script src="{{url_for('static', filename='codebase/dhtmlx.js')}}" type="text/javascript"></script>
- <link rel="STYLESHEET" type="text/css" href="{{url_for('static', filename='codebase/dhtmlx.css')}}">
-<link rel="stylesheet" href="{{url_for('static', filename='css/untitled.css')}}">
-
-
-
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
-        <style>
-
-            html, body {
-                width: 100%;
-                height: 100%;
-                margin: 0px;
-                overflow: hidden;
-                background-color:white;
-            }
-
-        </style>
-
-
-
-        <script type="text/javascript">
-
-            window.onload = function(){
-
-
-                window.dhx4.skin = 'material';
-    	var main_layout = new dhtmlXLayoutObject(document.body, '2U');
-
-    	var a = main_layout.cells('a');
-    	a.setWidth('200');
-      a.setText('My admin');
-    	a.hideHeader();
-    	var sidebar_2 = a.attachSidebar({template: 'details', width: '200', icons_path: './codebase/imgs_sidebar/', autohide: '', header: ''});
-
-
-
-
-    	var cell_2 = main_layout.cells('b');
-    	cell_2.hideHeader();
-    	var menu_3 = cell_2.attachMenu();
-    	menu_3.setIconsPath('./codebase/imgs/');
-
-    	menu_3.loadStruct('<menu><item type="item" id="menuitem_1" text="Home" /></menu>');
-    	var str = [
-    		{ type:"settings" , labelWidth:80, inputWidth:250, position:"absolute"  },
-    		{ type:"input" ,id:"username", name:"form_input_3", label:"Username", labelWidth:250, required:true, labelLeft:150, labelTop:100, inputLeft:150, inputTop:121  },
-    		{ type:"password" ,id:"password", name:"form_password_1", label:"Password", labelWidth:250, required:true, labelLeft:150, labelTop:175, inputLeft:150, inputTop:196  },
-    		{ type:"button" , name:"form_button_2", label:"Send", value:"Send", width:"75", inputWidth:75, inputLeft:150, inputTop:250  },
-    		{ type:"button" , name:"form_button_3", label:"Reset", value:"Reset",width:"75", inputWidth:75, inputLeft:325, inputTop:250  },
-    		{ type:"label" , name:"form_label_1", label:"Start a new admin session", width:250, labelWidth:250, labelLeft:150, labelTop:50  },
-    		{ type:"label" , name:"form_label_2", label:"Have you forgot the password?", width:250, labelWidth:250, labelLeft:425, labelTop:175  }
-    	];
-    	var form_2 = cell_2.attachForm(str);
-      form_2.attachEvent("onButtonClick", function(id){
-
-if(id=="form_button_3"){
-  form_2.clear();
-}
-else{
-//ora dobbiamo inviare al server username e password.
-var username=jQuery('input[name="form_input_3"]').val();
-var password=jQuery('input[name="form_password_1"]').val();
-jQuery.ajax({
-  url:'./api/accesso.php',
-  method: 'POST',
-  data:{
-    var1:username,var2:password
-  }
-}).done(function(d){
-
-if(parseInt(d)==0)
-  alert("Authentication failed.");
-else
-  window.location.href = "view/accounts.php";
-
-});
-
-
-}
-
-  });
-
-
-            }
-        </script>
-
-
-</head>
-
-<body class="bg-gradient-primary">
-    {%block body%} {%endblock%}
+    <!-- Scripts -->
     <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
-    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/chart.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/bs-init.js')}}"></script>
     <script src="{{url_for('static', filename='js/greencharge.js')}}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
     <script src="{{url_for('static', filename='js/theme.js')}}"></script>
-</body>
 
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background-color: #f2f5f7;
+            color: #333;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: #ffffff;
+            color: #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #333;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background: #e2e6ea;
+            border-left: 4px solid #007bff;
+            color: #007bff;
+        }
+
+        .sidebar a.active {
+            background: #e2e6ea;
+            border-left: 4px solid #007bff;
+            color: #007bff;
+        }
+
+        /* Main content styling */
+        .content {
+            margin-left: 220px; /* same as sidebar width */
+            padding: 2rem;
+        }
+
+        .content-container {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .table thead.table-primary {
+            background-color: #007bff;
+            color: #fff;
+        }
+        /* Iframe styling */
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        h3 {
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-flex flex-column">
+        <div class="brand">My Admin</div>
+        <a href="#" class="menu-item" data-target="new-accounts" id="link-new">New Accounts</a>
+        <a href="#" class="menu-item" data-target="reserved-accounts" id="link-reserved">Reserved Accounts</a>
+        <a href="#" class="menu-item" data-target="passwd-download" id="link-passwd">Passwords Download</a>
+        <a href="#" class="menu-item" data-target="clear-all" id="link-clear">Clear All</a>
+        <a href="#" class="menu-item" data-target="charts" id="link-charts">Dashboard Grafici</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="content-container" id="main-content">
+            <h3 class="text-primary">Welcome to Admin Panel</h3>
+            <p>Select an option from the sidebar.</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // handle menu clicks
+            $('.menu-item').click(function () {
+                // remove active from all links, add to this
+                $('.menu-item').removeClass('active');
+                $(this).addClass('active');
+
+                let target = $(this).data('target');
+                if (target === 'charts') {
+                    $('#main-content').html(`
+                        <iframe src="/charts"></iframe>
+                    `);
+                } else if (target === 'new-accounts') {
+                    $('#main-content').html(`
+                        <h3 class="text-primary">New Accounts</h3>
+<!-- Nel tuo codice, sostituisci la parte del form con: -->
+
+<form action="/admin/upload_users" method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="uploadFile" class="form-label">Upload Excel File</label>
+    <div class="input-group">
+      <input 
+        type="file" 
+        class="form-control" 
+        id="uploadFile" 
+        name="uploadFile" 
+        required
+        aria-describedby="uploadButton"
+      >
+      <button 
+        class="btn btn-primary" 
+        type="submit" 
+        id="uploadButton"
+      >
+        Upload
+      </button>
+    </div>
+  </div>
+</form>
+
+                    `);
+                } else if (target === 'reserved-accounts') {
+                    $('#main-content').html(`
+                        <h3 class="text-primary">Reserved Accounts</h3>
+                        <table class="table table-light table-striped">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>First Name</th>
+                                    <th>Second Name</th>
+                                    <th>Serial Number</th>
+                                    <th>Select</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accounts-table">
+                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="mt-3">
+                            <button id="delete-selected" class="btn btn-danger me-2">Delete Selected</button>
+                            <button id="clear-selection" class="btn btn-secondary">Clear Selection</button>
+                        </div>
+                    `);
+                    loadAccounts();
+                } else if (target === 'passwd-download') {
+                    $.ajax({
+                        url: '/admin/passwd_download',
+                        method: 'GET',
+                        success: function (data) {
+                            $('#main-content').html(`
+                                <h3 class="text-primary">Passwords Download</h3>
+                                <pre>${data}</pre>
+                            `);
+                        }
+                    });
+                } else if (target === 'clear-all') {
+                    if (confirm("Are you sure you want to clear all?")) {
+                        $.ajax({
+                            url: '/admin/clear_session',
+                            method: 'POST',
+                            success: function (response) {
+                                alert(response);
+                            },
+                            error: function(err){
+                                alert('Error clearing all: ' + err);
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        function loadAccounts() {
+            $.ajax({
+                url: "admin/list_accounts?all=0",
+                method: "GET",
+                success: function (data) {
+                    let rows = "";
+                    $(data).find("row").each(function () {
+                        let cells = $(this).find("cell");
+                        let firstName = $(cells[0]).text();
+                        let secondName = $(cells[1]).text();
+                        let serialNumber = $(cells[2]).text();
+                        rows += `<tr>
+                            <td>${firstName}</td>
+                            <td>${secondName}</td>
+                            <td>${serialNumber}</td>
+                            <td><input type="checkbox" class="select-row"></td>
+                        </tr>`;
+                    });
+
+                    if (!rows) {
+                        rows = `<tr><td colspan="4" class="text-center text-danger">No data available</td></tr>`;
+                    }
+
+                    $('#accounts-table').html(rows);
+
+                    // set up event handlers for the new buttons
+                    $('#delete-selected').click(function() {
+                        let checked = [];
+                        $('.select-row:checked').each(function() {
+                            // assumiamo che serialNumber sia un identificatore univoco
+                            // potresti usare un attributo data-id se preferisci
+                            let row = $(this).closest('tr');
+                            let serialNumber = row.find('td').eq(2).text();
+                            checked.push(serialNumber);
+                        });
+
+                        if (checked.length === 0) {
+                            alert('No rows selected.');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: '/admin/del_res_acc',
+                            method: 'POST',
+                            data: { var1: checked },
+                            success: function(d) {
+                                if (d == 0) {
+                                    alert("Deletion successful!");
+                                    // reload the table
+                                    loadAccounts();
+                                } else {
+                                    alert(d);
+                                }
+                            }
+                        });
+                    });
+
+                    $('#clear-selection').click(function() {
+                        $('.select-row').prop('checked', false);
+                    });
+                }
+            });
+        }
+    </script>
+</body>
 </html>

@@ -1,8 +1,9 @@
 version: "3.7"
 services:
-   www:
-        image: pyevaluate
-        ports: 
+    www:
+        build:
+            context: .
+        ports:
             - "8025:5000"
             - "8080:80"
         links:
@@ -10,17 +11,22 @@ services:
         networks:
             - default
         volumes:
-            - users:/home/evaluatex/users:consistent
+            - ./users:/home/evaluatex/users:consistent
+            - ./data:/home/evaluatex/data:consistent
             - ./atheos_module:/var/www/html
-        cap_add: 
+            - ./app:/usr/share/pyevaluate/app
+        cap_add:
             - SYS_PTRACE
         security_opt:
             - seccomp:unconfined
         privileged: true
-
-   db:
+        command: /bin/bash
+        #uncomment following line for dev
+        stdin_open: true
+        tty: true
+    db:
         image: mysql
-        ports: 
+        ports:
             - "3306:3306"
         environment:
             - MYSQL_DATABASE=evaluatex
@@ -32,16 +38,16 @@ services:
             - persistent:/var/lib/mysql
         networks:
             - default
-   phpmyadmin:
+    phpmyadmin:
         image: phpmyadmin/phpmyadmin
-        links: 
+        links:
             - db:db
         ports:
-            - "8000:80"
+            - "8001:80"
         environment:
             - MYSQL_USER=user
             - MYSQL_PASSWORD=test
             - MYSQL_ROOT_PASSWORD=test
+
 volumes:
     persistent:
-    users:

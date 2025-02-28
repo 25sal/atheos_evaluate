@@ -60,4 +60,4 @@ define("WORKSPACE", BASE_PATH . "/workspace");
 define("UPDATEURL", "https://www.atheos.io/update");
 define("MARKETURL", "https://www.atheos.io/market/json");
 define("GITHUBAPI", "https://api.github.com/repos/Atheos/Atheos/releases/latest");
-	
+define("WHITEPATHS", BASE_PATH . ",/home/evaluatex/users");

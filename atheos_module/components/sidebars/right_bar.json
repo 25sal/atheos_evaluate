@@ -44,13 +44,15 @@
 		"title": "codegit",
 		"admin": false,
 		"icon": "fas fa-code-branch",
-		"onclick": "atheos.codegit.showCodeGit();"
+		"onclick": "atheos.codegit.showCodeGit();",
+		"exam": false
 	},
 	{
 		"title": "macro",
 		"admin": false,
 		"icon": "fas fa-magic",
-		"onclick": "atheos.macro.showMacro();"
+		"onclick": "atheos.macro.showMacro();",
+		"exam": false
 	},
 	{
 		"title": "market",
@@ -71,19 +73,22 @@
 		"title": "account",
 		"admin": false,
 		"icon": null,
-		"onclick": null
+		"onclick": null,
+		"exam": false
 	},
 	{
 		"title": "settings",
 		"admin": false,
 		"icon": "fas fa-cogs",
-		"onclick": "atheos.settings.show();"
+		"onclick": "atheos.settings.show();",
+		"exam": false
 	},
 	{
 		"title": "password",
 		"admin": false,
 		"icon": "fas fa-key",
-		"onclick": "atheos.user.changePassword();"
+		"onclick": "atheos.user.changePassword();",
+		"exam": false
 	},
 	{
 		"title": "break"
@@ -98,7 +103,8 @@
 		"title": "help",
 		"admin": false,
 		"icon": "fas fa-question-circle",
-		"onclick": "window.open('https://www.atheos.io/');"
+		"onclick": "window.open('https://www.atheos.io/');",
+		"exam": false
 	},
 	{
 		"title": "logout",

@@ -8,10 +8,15 @@ RUN mkdir -p /home/evaluatex/users
 RUN apt update
 RUN apt -y upgrade
 RUN apt -y install apt-utils
-RUN apt -y install git ghdl gcc g++ python3-pip apache2 libapache2-mod-php
+RUN apt -y install git ghdl gcc g++ python3-pip apache2 libapache2-mod-php php-curl php-mbstring
+
 
 # Crea una directory per i dati del tuo servizio (se necessario)
 RUN mkdir -p /home/evaluatex/data
+
+
+RUN git config --global user.email "evaluate@example.com"
+RUN git config --global user.name "Evaluate"
 
 RUN rm /var/www/html/index.html
 # Copia i file dalla cartella host "./Atheos" nella cartella del container "/home/atheos"
@@ -53,4 +58,6 @@ EXPOSE 5000 80
 ENV FLASK_APP=app
 
 # Avvia sia Flask che Apache
-CMD service apache2 start && flask run --host=0.0.0.0
+#comment following line for dev
+#&& flask run --host=0.0.0.0
+CMD service apache2 start 

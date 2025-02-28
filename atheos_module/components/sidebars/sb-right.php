@@ -44,21 +44,22 @@ foreach ($plugins as $plugin) {
 		////////////////////////////////////////////////////////////
 		foreach ($right_bar as $item_rb => $data) {
 			$data["admin"] = isset($data["admin"]) ? $data["admin"] : false;
+			$data["exam"] = isset($data["exam"]) ? $data["exam"] : true;
 
 			if ($data['title'] === 'break') {
-				if (!$data['admin'] && $access) {
+				if (!$data['admin'] && $access && $data["exam"] ) {
 					echo("<hr>");
 				}
 			} elseif ($data['title'] != 'pluginbar' && $data['onclick'] == '') {
-				if (!$data['admin'] || $access) {
+				if ((!$data['admin'] && $data["exam"]) || $access) {
 					echo("<label class=\"category\">" . i18n($data["title"]) . "</label>");
 				}
 			} elseif ($data['title'] === 'pluginbar') {
-				if (!$data['admin'] || $access) {
+				if ((!$data['admin'] && $data["exam"]) || $access) {
 					echo($pluginHTML);
 				}
 			} else {
-				if (!$data['admin'] || $access) {
+				if ((!$data['admin'] && $data["exam"]) || $access) {
 					echo('<a onclick="'.$data['onclick'].'"><i class="'.$data['icon'].'"></i>'.i18n($data['title']).'</a>');
 				}
 			}

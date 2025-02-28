@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title></title>
+     <script src="{{url_for('static', filename='codebase/dhtmlx.js')}}" type="text/javascript"></script>
+    <link rel="STYLESHEET" type="text/css" href="{{url_for('static', filename='codebase/dhtmlx.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+<link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/untitled.css')}}">
+    <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/chart.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bs-init.js')}}"></script>
+    <script src="{{url_for('static', filename='js/greencharge.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="{{url_for('static', filename='js/theme.js')}}"></script>
+ <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0px;
+             background-color:grey;
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+
+
+</body>
+
+
+
+<script type="text/javascript">
+    window.dhx4.skin = 'dhx_web';
+
+    var main_layout = new dhtmlXLayoutObject(document.body, '1C');
+
+    /**
+     * Context meny for password update
+    * */
+    var context_menu = new dhtmlXMenuObject();
+    context_menu.setIconsPath('/static/codebase/imgs/');
+    context_menu.renderAsContextMenu();
+    context_menu.loadStruct('<menu><item type="item" id="new_password" text="New Password" /><item type="item" id="item" text="Cancel" /></menu>');
+    context_menu.attachEvent('onClick', function(id, zoneId, casState){
+        var strForm =[
+		{ type:"input", name:"username", label: "Username", value: context_menu.getUserData("new_password", "username")},
+		{ type:"input", name:"password", label:"New Password"},
+		{ type:"button"  ,name:"update", label:"update", value:"Update"}
+        ];
+        var windows = new dhtmlXWindows();
+        windows.setSkin('dhx_web');
+        var window_1 = windows.createWindow('window_1', 500, 200, 500, 300);
+		var passwd_form = window_1.attachForm(strForm);
+		window_1.setText('Update Password');
+        window_1.button('minmax').show();
+        window_1.button('minmax').enable();
+        window_1.show();
+		passwd_form.attachEvent('onButtonClick', function(name, command){
+	        passwd_form.send("new_password");
+		});
+
+		});
+
+
+
+
+
+	var leftMenu = main_layout.cells('a');
+	leftMenu.setText('My Admin');
+	leftMenu.setWidth('200');
+	var sidebar = leftMenu.attachSidebar({template: 'details', width: '200', icons_path: '/static/codebase/imgs_sidebar/', autohide: '', header: ''});
+	sidebar.addItem({id: 'sidebar_item_0', text: 'New Accounts', icon: 'sidebar_item_icon.png'});
+    var sidebar_item_0 = sidebar.cells('sidebar_item_0');
+
+    var str = [
+		{ type:"settings" , labelWidth:80, inputWidth:250, position:"absolute"  },
+		{ type:"label" , name:"form_label_16", label:"Create a new exam", width:250, labelWidth:250, labelLeft:175, labelTop:25  },
+		{ type:"upload" , name:"carica_tracce", label:"Uploader",labelWidth:330, inputWidth:330, inputHeight:60, labelLeft:125, labelTop:125, inputLeft:125, inputTop:125,/* titleScreen:true,*/ url:"/admin/upload_users"   },
+		
+        //{ type:"button" , name:"form_button_2", label:"Create exam", value:"Create exam", width:"250", inputLeft:175, inputTop:200  },
+		
+         
+	];
+	var form = sidebar_item_0.attachForm(str);
+    sidebar_item_0.setActive();
+    
+
+	sidebar.addItem({id: 'sidebar_item_1', text: 'Reserved Accounts', icon: 'sidebar_item_icon.png'});
+	var sidebar_item_1 = sidebar.cells('sidebar_item_1');
+    var list_ac_layout = sidebar_item_1.attachLayout('2E');
+
+	var cell_grid = list_ac_layout.cells('a');
+    cell_grid.hideHeader();
+
+    var grid_1 = cell_grid.attachGrid("gridbox");
+	grid_1.setImagesPath('/static/codebase/imgs/');
+	grid_1.setHeader(["first_name","second_name","serial_number","select"]);
+	grid_1.setColTypes("ro,ro,ro,ch");
+    grid_1.setColumnIds("first_name,second_name,serial_number,select");
+	grid_1.setColSorting('str,str,str,str');
+	grid_1.setInitWidths('*,*,*,*');
+    grid_1.enableSmartRendering (true);
+    /**
+     * For password update
+     */
+    grid_1.attachEvent('onRightClick', function(id, ind, obj){
+        context_menu.setUserData("new_password","username", grid_1.getRowData(id)['id1']);
+		context_menu.showContextMenu(500,200);
+	});
+
+	grid_1.init();
+    grid_1.load("admin/list_accounts?all=0","xml");
+    //var dpg = new dataProcessor("../api/list_users.php");
+    //dpg.init(grid_1);
+
+    var cell_form = list_ac_layout.cells('b');
+    cell_form.hideHeader();
+    var str = [
+      { type:"settings" , labelWidth:80, inputWidth:250, position:"absolute"  },
+      { type:"button" , name:"form_delete", label:"Delete selected", value:"Delete selected", width:"250", inputLeft:100, inputTop:25  },
+      { type:"button" , name:"form_uncheck", label:"Clear selection", value:"Clear selection", width:"250", inputLeft:550, inputTop:25  }
+    ];
+    var form_del = cell_form.attachForm(str);
+    form_del.attachEvent("onButtonClick",function(id) {
+        if (id == "form_uncheck")
+            grid_1.uncheckAll();
+        else if (id == "form_delete") {
+            var checked = grid_1.getCheckedRows(3);
+            var elements = checked.split(",");
+            jQuery.ajax({
+                url: '/admin/del_res_acc',
+                method: 'POST',
+                data: {
+                    var1: elements
+                        }
+                     }).done(function (d) {
+                        if (d == 0)
+                            alert("Cancellazione progetto/i andata a buon fine !");
+                        else
+                            alert(d);
+            });
+        }
+    });
+
+    sidebar.addItem({id: 'passwd_download', text: 'Passwords download', icon: 'sidebar_item_icon.png'});
+	var passwd_cell = sidebar.cells('passwd_download');
+
+	sidebar.addItem({id: 'sidebar_clearall', text: 'Clear All', icon: 'sidebar_item_icon.png'});
+	var sidebar_item_2 = sidebar.cells('sidpasswd_dowebar_clearall');
+
+
+    var menu = leftMenu.attachMenu();
+	menu.setIconsPath('/static/codebase/imgs/');
+
+	menu.loadStruct('/static/data/admin/menu.xml');
+    menu.attachEvent("onClick",function(id) {
+        
+        if(id=="accounts_list" || id=="accounts_new" || id=="accounts_delete")
+            window.location.href = "/admin"
+        else if (id == "projects_list" || id =="projects_new" || id=="Clear All")
+            window.location.href = "/admin/projects";
+
+        else if (id == "settings_general")
+            window.location.href = "/admin/settings";
+        else if (id=="stat_general")
+            window.location.href = "/admin/statistics";
+
+    });
+
+    sidebar.attachEvent("onSelect",function(id) {
+        if( id == "passwd_download")
+            jQuery.ajax({
+                                url: '/admin/passwd_download'
+                            }).done(function(data) {
+                                passwd_cell.attachHTMLString("<pre>"+data+"</pre>");
+                              });
+        else if (id == "sidebar_clearall") {
+            var windows = new dhtmlXWindows();
+            windows.setSkin('dhx_web');
+
+            var window = windows.createWindow('window_1', 0, 0, 400, 200);
+            var str = [
+                {type: "settings", labelWidth: 80, inputWidth: 250, position: "absolute"},
+                {
+                    type: "label",
+                    name: "form_label_2",
+                    label: " Are you sure you want to clear all?",
+                    width: 275,
+                    labelWidth: 275,
+                    labelLeft: 25,
+                    labelTop: 25
+                },
+                {
+                    type: "button",
+                    name: "form_button_3",
+                    label: "Yes",
+                    value: "Yes",
+                    width: "75",
+                    inputWidth: 75,
+                    inputLeft: 25,
+                    inputTop: 75
+                },
+                {
+                    type: "button",
+                    name: "form_button_4",
+                    label: "No",
+                    value: "No",
+                    width: "75",
+                    inputWidth: 75,
+                    inputLeft: 200,
+                    inputTop: 75
+                }
+            ];
+            var del_form = window.attachForm(str);
+            window.setText('Attention!');
+            window.centerOnScreen();
+            window.button('minmax').show();
+            window.button('minmax').enable();
+            del_form.attachEvent("onButtonClick", function (id) {
+                    if (id == "form_button_4")
+                        window.close();
+                    else {
+                        grid_1.checkAll(true);
+                        var checked = grid_1.getCheckedRows(3);
+                        var elements = checked.split(",");
+                        if (elements.length == 1 && elements[0] == "")
+                            alert("Non accounts to delete!");
+
+                        else {
+                            jQuery.ajax({
+                                url: '/admin/clear_session'
+                            }).done(function (d) {
+                                alert(d);
+                            });
+
+                        }
+                        window.close();
+                    }
+
+
+                }
+            );
+        }
+    });//end sidebare event
+
+
+
+
+
+    </script>
+</html>
