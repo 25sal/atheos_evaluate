@@ -10,11 +10,16 @@
     <link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
 
     <!-- Scripts -->
-    <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
-    <script src="{{url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous">
+    </script>
+
+    <!-- Popper + Bootstrap 4 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" crossorigin="anonymous">
+    </script>
     <script src="{{url_for('static', filename='js/chart.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/bs-init.js')}}"></script>
-    <script src="{{url_for('static', filename='js/greencharge.js')}}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
     <script src="{{url_for('static', filename='js/theme.js')}}"></script>
 
@@ -26,52 +31,77 @@
             font-family: 'Nunito', sans-serif;
         }
 
-        /* Sidebar styling */
         .sidebar {
             width: 220px;
             height: 100vh;
-            background: #ffffff;
-            color: #333;
+
+            /* Usa direttamente la variabile come background */
+            background: var(--gradient-bg);
+
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             position: fixed;
             top: 0;
             left: 0;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .table thead.table-primary {
+            /* Sfumatura identica */
+            background: var(--gradient-bg);
+            color: #fff;
         }
 
         .sidebar .brand {
-            font-size: 1.25rem;
-            font-weight: 600;
-            text-align: center;
-            padding: 0.75rem;
+            color: #fff;
             margin-bottom: 1rem;
-            color: #007bff;
+        }
+
+        .sidebar .brand h4 {
+            margin: 0;
+            font-weight: 700;
+            /* Grassetto */
         }
 
         .sidebar a {
             display: block;
-            color: #333;
+            /* Il testo in genere su uno sfondo scuro/gradiente va in bianco */
+            color: #fff;
             padding: 0.75rem 1rem;
             text-decoration: none;
-            transition: background 0.3s, color 0.3s;
-            border-left: 4px solid transparent;
+            transition: background 0.2s, color 0.2s, padding-left 0.2s;
+
+            /* Piccolo trucco per allineare meglio le icone */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Spazio tra icona e testo */
         }
 
         .sidebar a:hover {
-            background: #e2e6ea;
-            border-left: 4px solid #007bff;
-            color: #007bff;
+            background: rgba(255, 255, 255, 0.1);
+            padding-left: 1.25rem;
+            /* Piccolo effetto "sliding" */
         }
 
         .sidebar a.active {
-            background: #e2e6ea;
-            border-left: 4px solid #007bff;
-            color: #007bff;
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            border-left: 4px solid #fff;
+            /* Indica l'elemento attivo */
+            padding-left: calc(1rem - 4px);
         }
 
-        /* Main content styling */
+        .sidebar i {
+            /* Le icone restano bianche, ma puoi personalizzare */
+            color: inherit;
+            font-size: 1rem;
+        }
+
+
         .content {
-            margin-left: 220px; /* same as sidebar width */
+            margin-left: 220px;
+            /* same as sidebar width */
             padding: 2rem;
         }
 
@@ -86,21 +116,98 @@
             background-color: #007bff;
             border-color: #007bff;
         }
+
         .btn-primary:hover {
             background-color: #0056b3;
         }
+
         .table thead.table-primary {
             background-color: #007bff;
             color: #fff;
         }
-        /* Iframe styling */
+
         iframe {
             width: 100%;
             height: 600px;
             border: none;
         }
+
         h3 {
             font-weight: 600;
+        }
+
+        #deleting-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            /* Sfondo nero semi-trasparente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            visibility: hidden;
+            /* Inizialmente nascosto */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* 🔹 Mostra il loader */
+        #deleting-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 🔹 Stile del box di caricamento */
+        .loading-spinner {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #57CC99;
+
+            /* Ti crei una variabile “gradient-bg” che userai ovunque ti serva la sfumatura */
+            --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .sidebar .brand {
+            /* Testo */
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff;
+
+            /* Allineamento e spazi */
+            text-align: center;
+            padding: 1rem;
+            margin: 0 1rem 1rem;
+            /* un po' di margine laterale e in basso */
+
+            /* Sfondo semi-trasparente che risalta su gradient-bg */
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+
+            /* Leggero effetto “incassato” */
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease;
+        }
+
+        .sidebar .brand:hover {
+            /* Hover: scurisci leggermente il background */
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .hr-white {
+            border-top: 1px solid #fff !important;
+            /* Bordo bianco */
+            opacity: 1;
+            /* Garantisce che non ci sia trasparenza */
         }
     </style>
 </head>
@@ -108,22 +215,138 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column">
-        <div class="brand">My Admin</div>
-        <a href="#" class="menu-item" data-target="new-accounts" id="link-new">New Accounts</a>
-        <a href="#" class="menu-item" data-target="reserved-accounts" id="link-reserved">Reserved Accounts</a>
-        <a href="#" class="menu-item" data-target="passwd-download" id="link-passwd">Passwords Download</a>
-        <a href="#" class="menu-item" data-target="clear-all" id="link-clear">Clear All</a>
-        <a href="#" class="menu-item" data-target="charts" id="link-charts">Dashboard Grafici</a>
+        <div class="brand">Admin</div>
+
+        <!-- Sezione 1: Gestione Utenti -->
+        <h6 class="px-3 mt-3 text-uppercase text-white">Gestione Utenti</h6>
+        <a href="#" class="menu-item" data-target="new-accounts" id="link-new">
+            <i class="fas fa-user-plus"></i> Aggiungi Accounts
+        </a>
+        <a href="#" class="menu-item" data-target="reserved-accounts" id="link-reserved">
+            <i class="fas fa-user-lock"></i> Account Riservati
+        </a>
+        <a href="#" class="menu-item" data-target="passwd-download" id="link-passwd">
+            <i class="fas fa-key"></i> Download Passwords
+        </a>
+        <hr class="mx-3 hr-white">
+
+        <!-- Sezione 2: Gestione Progetti -->
+        <h6 class="px-3 mt-3 text-uppercase text-white">Gestione Progetti</h6>
+        <a href="#" class="menu-item" data-target="manage-exercises" id="link-exercises">
+            <i class="fas fa-list"></i> Gestisci Esercizi
+        </a>
+        <a href="#" class="menu-item" data-target="assign-exercises" id="assign-exercises">
+            <i class="fas fa-code"></i> Assegna Esercizi
+        </a>
+        <a href="#" class="menu-item" data-target="reassign-exercises" id="reassign-exercises">
+            <i class="fas fa-wrench"></i>Re-Assegna Esercizi
+        </a>
+        <hr class="mx-3 hr-white">
+
+        <!-- Sezione 3: Monitoraggio -->
+        <h6 class="px-3 mt-3 text-uppercase text-white">Monitoraggio</h6>
+        <a href="#" class="menu-item" data-target="charts" id="link-charts">
+            <i class="fas fa-chart-bar"></i> Dashboard Grafici
+        </a>
+        <hr class="mx-3 hr-white">
+
+        <!-- Ultimo item in basso -->
+        <div class="mt-auto">
+            <a href="#" class="menu-item" data-target="clear-all" id="link-clear">
+                <i class="fas fa-trash-alt"></i> Pulisci Tutto
+            </a>
+        </div>
     </div>
+
 
     <!-- Main Content -->
     <div class="content">
         <div class="content-container" id="main-content">
-            <h3 class="text-primary">Welcome to Admin Panel</h3>
-            <p>Select an option from the sidebar.</p>
+            <h3 class="text-primary">Benvenuto nel Pannello di Amministrazione</h3>
+            <p>Seleziona un'azione dal menu a sinistra</p>
+        </div>
+    </div>
+    <!-- Overlay a tutto schermo -->
+    <div id="deleting-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+            <p>Attendere, sto pulendo la sessione...</p>
+        </div>
+    </div>
+    <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">Cambia Password</h5>
+                    <!-- Bottone di chiusura per Bootstrap 4 -->
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Niente "form-label" (tipico di B5), usiamo la struttura B4 -->
+                    <form id="changePasswordForm">
+                        <div class="form-group">
+                            <label for="newPassword">Nuova Password</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Conferma Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <!-- Input nascosto per il serial number -->
+                        <input type="hidden" id="changeSerialNumber">
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="savePasswordBtn">Salva</button>
+                </div>
+            </div>
         </div>
     </div>
 
+
+    <!-- Modal di conferma "Clear All" -->
+    <div class="modal fade" id="clearAllModal" tabindex="-1" role="dialog" aria-labelledby="clearAllModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <!-- Header del Modal -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clearAllModalLabel">Conferma eliminazione</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Corpo del Modal -->
+                <div class="modal-body">
+                    Sei sicuro di voler eliminare tutto?
+                </div>
+
+                <!-- Footer del Modal -->
+                <div class="modal-footer">
+                    <!-- Pulsante Annulla -->
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annulla</button>
+                    <!-- Pulsante Conferma "Sì, elimina" -->
+                    <button type="button" class="btn btn-danger" id="clearAllConfirmBtn">Elimina</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Script principale -->
     <script>
         $(document).ready(function () {
             // handle menu clicks
@@ -133,152 +356,320 @@
                 $(this).addClass('active');
 
                 let target = $(this).data('target');
+
+                // Se l'utente clicca su "Dashboard Grafici"
                 if (target === 'charts') {
                     $('#main-content').html(`
+                        <h3 class="text-primary">Monitoraggio</h3>
+
                         <iframe src="/charts"></iframe>
                     `);
-                } else if (target === 'new-accounts') {
+                }
+                // Se l'utente clicca su "New Accounts"
+                else if (target === 'new-accounts') {
                     $('#main-content').html(`
-                        <h3 class="text-primary">New Accounts</h3>
-<!-- Nel tuo codice, sostituisci la parte del form con: -->
+                        <h3 class="text-primary">Gestione Turni</h3>
 
-<form action="/admin/upload_users" method="POST" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label for="uploadFile" class="form-label">Upload Excel File</label>
-    <div class="input-group">
-      <input 
-        type="file" 
-        class="form-control" 
-        id="uploadFile" 
-        name="uploadFile" 
-        required
-        aria-describedby="uploadButton"
-      >
-      <button 
-        class="btn btn-primary" 
-        type="submit" 
-        id="uploadButton"
-      >
-        Upload
-      </button>
-    </div>
-  </div>
-</form>
-
+                        <iframe src="/admin/new_accounts">
+                        </iframe>
                     `);
-                } else if (target === 'reserved-accounts') {
+                }
+                // Se l'utente clicca su "Reserved Accounts"
+                else if (target === 'reserved-accounts') {
                     $('#main-content').html(`
-                        <h3 class="text-primary">Reserved Accounts</h3>
-                        <table class="table table-light table-striped">
-                            <thead class="table-primary">
-                                <tr>
-                                    <th>First Name</th>
-                                    <th>Second Name</th>
-                                    <th>Serial Number</th>
-                                    <th>Select</th>
-                                </tr>
-                            </thead>
-                            <tbody id="accounts-table">
-                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                        <div class="mt-3">
-                            <button id="delete-selected" class="btn btn-danger me-2">Delete Selected</button>
-                            <button id="clear-selection" class="btn btn-secondary">Clear Selection</button>
-                        </div>
-                    `);
-                    loadAccounts();
-                } else if (target === 'passwd-download') {
-                    $.ajax({
-                        url: '/admin/passwd_download',
-                        method: 'GET',
-                        success: function (data) {
-                            $('#main-content').html(`
-                                <h3 class="text-primary">Passwords Download</h3>
-                                <pre>${data}</pre>
-                            `);
-                        }
+        <h3 class="text-primary">Reserved Accounts</h3>
+
+        <div class="form-group">
+            <label for="turnoSelect">Turno</label>
+            <select id="turnoSelect" class="form-control w-auto">
+            </select>
+        </div>
+
+
+        <div class="table-responsive">
+            <table class="table table-light table-striped" id="usersTable">
+                <thead class="table-primary">
+                <tr>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Matricola</th>
+                    <th>Seleziona</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="accounts-table">
+                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="mt-3">
+            <button id="delete-selected" class="btn btn-danger me-2">Elimina Selezionati</button>
+            <button id="clear-selection" class="btn btn-secondary">Deseleziona Tutto</button>
+        </div>
+    `);
+                    loadTurni();
+                    loadAccounts("all");
+                    $('#turnoSelect').off('change').on('change', function () {
+                        let turnoId = $(this).val();
+                        loadAccounts(turnoId);
                     });
-                } else if (target === 'clear-all') {
-                    if (confirm("Are you sure you want to clear all?")) {
-                        $.ajax({
-                            url: '/admin/clear_session',
-                            method: 'POST',
-                            success: function (response) {
-                                alert(response);
-                            },
-                            error: function(err){
-                                alert('Error clearing all: ' + err);
-                            }
-                        });
-                    }
+                }
+                // Se l'utente clicca su "Passwords Download"
+                else if (target === 'passwd-download') {
+                    $('#main-content').html(`
+        <iframe 
+            src="/admin/list_password_files" ></iframe>
+    `);
+                }
+                else if (target === 'manage-exercises') {
+                    $('#main-content').html(`
+        <iframe 
+            src="/admin/exercises" ></iframe>
+    `);
+                }
+                else if (target === 'assign-exercises') {
+                    $('#main-content').html(`
+        <iframe 
+            src="/admin/assign_exercises" ></iframe>
+    `);
+                }
+                else if (target === 'reassign-exercises') {
+                    $('#main-content').html(`
+        <iframe 
+            src="/admin/reassign_exercises" ></iframe>
+    `);
+                }
+                // Se l'utente clicca su "Clear All"
+                else if (target === 'clear-all') {
+                    $('#clearAllModal').modal('show');
+
                 }
             });
         });
 
-        function loadAccounts() {
+        // Funzione per caricare la lista dei Reserved Accounts
+        function loadAccounts(turnoId) {
             $.ajax({
-                url: "admin/list_accounts?all=0",
+                url: `/api/users_by_turno?turno=${turnoId}`,
                 method: "GET",
                 success: function (data) {
-                    let rows = "";
-                    $(data).find("row").each(function () {
-                        let cells = $(this).find("cell");
-                        let firstName = $(cells[0]).text();
-                        let secondName = $(cells[1]).text();
-                        let serialNumber = $(cells[2]).text();
-                        rows += `<tr>
-                            <td>${firstName}</td>
-                            <td>${secondName}</td>
-                            <td>${serialNumber}</td>
-                            <td><input type="checkbox" class="select-row"></td>
-                        </tr>`;
+                    let tbody = $('#usersTable tbody');
+                    tbody.empty();
+
+
+                    data.forEach(user => {
+                        let assignedIcon = user.assegnato == 1
+                            ? '<i class="text-success fas fa-check"></i>'
+                            : '<i class="text-danger fas fa-times"></i>';
+
+                        let tr = $(`
+  <tr>
+    <td>${user.nome}</td>
+    <td>${user.cognome}</td>
+    <td>${user.matricola}</td>
+    <td><input type="checkbox" class="select-row" data-matricola="${user.matricola}"></td>
+    <td>
+      <!-- Pulsante di cambio password -->
+<button 
+  class="btn btn-info btn-sm change-password" 
+  data-serial="${user.matricola}"
+  data-toggle="modal" 
+  data-target="#passwordModal"
+>
+        Cambia Password
+      </button>
+    </td>
+  </tr>
+`);
+                        tbody.append(tr);
+
                     });
 
-                    if (!rows) {
-                        rows = `<tr><td colspan="4" class="text-center text-danger">No data available</td></tr>`;
-                    }
 
-                    $('#accounts-table').html(rows);
 
-                    // set up event handlers for the new buttons
-                    $('#delete-selected').click(function() {
-                        let checked = [];
-                        $('.select-row:checked').each(function() {
-                            // assumiamo che serialNumber sia un identificatore univoco
-                            // potresti usare un attributo data-id se preferisci
-                            let row = $(this).closest('tr');
-                            let serialNumber = row.find('td').eq(2).text();
-                            checked.push(serialNumber);
+                    // Pulsante "Clear Selection"
+                    $('#clear-selection').click(function () {
+                        // Deselect all checkboxes
+                        $('.select-row').prop('checked', false);
+                    });
+
+                    // Pulsante "Delete Selected"
+                    $('#delete-selected').click(function () {
+                        let selectedMatricole = [];
+
+                        // Raccogliamo le matricole selezionate
+                        $('.select-row:checked').each(function () {
+                            // se usi data-matricola
+                            let mat = $(this).data('matricola');
+                            // oppure potresti prendere la <td> corrispondente:
+                            // let row = $(this).closest('tr');
+                            // let mat = row.find('td').eq(2).text();
+
+                            selectedMatricole.push(mat);
                         });
 
-                        if (checked.length === 0) {
-                            alert('No rows selected.');
+                        if (selectedMatricole.length === 0) {
+                            alert("Nessun utente selezionato!");
                             return;
                         }
 
+                        // Chiamiamo l'API elimina_utenti
                         $.ajax({
-                            url: '/admin/del_res_acc',
+                            url: '/admin/delete_users',
                             method: 'POST',
-                            data: { var1: checked },
-                            success: function(d) {
-                                if (d == 0) {
-                                    alert("Deletion successful!");
-                                    // reload the table
-                                    loadAccounts();
-                                } else {
-                                    alert(d);
-                                }
+                            data: {
+                                // passiamo la lista come JSON
+                                utenti: JSON.stringify(selectedMatricole)
+                            },
+                            success: function (resp) {
+                                // Ricarica la tabella
+                                loadAccounts(turnoId);
+                            },
+                            error: function (err) {
+                                alert("Errore nell'eliminazione: " + err.responseText);
                             }
                         });
                     });
 
-                    $('#clear-selection').click(function() {
-                        $('.select-row').prop('checked', false);
+                    // -- Aggiungi listener al nuovo bottone "Cambia Password" --
+                    $('.change-password').on('click', function () {
+                        let serial = $(this).data('serial');
+                        $('#passwordModal').modal('show');
+
+                        // Inseriamo il serial number nell'input hidden dentro al modal
+                        $('#changeSerialNumber').val(serial);
+
+                        // Facoltativo: Svuotiamo gli input password
+                        $('#newPassword').val('');
+                        $('#confirmPassword').val('');
+                    });
+                    $('#savePasswordBtn').on('click', function () {
+                        let pass1 = $('#newPassword').val();
+                        let pass2 = $('#confirmPassword').val();
+
+                        if (pass1 !== pass2) {
+                            alert("Le password non combaciano!");
+                            return;
+                        }
+                        if (!pass1 || !pass2) {
+                            alert("Password vuota!");
+                            return;
+                        }
+
+                        // Recuperiamo il serial memorizzato
+                        let serialNumber = $('#changeSerialNumber').val();
+
+                        // Invio AJAX a /admin/change_password
+                        $.ajax({
+                            url: '/admin/change_password',
+                            method: 'POST',
+                            data: {
+                                serialNumber: serialNumber,
+                                password: pass1
+                            },
+                            success: function (response) {
+                                if (response === "ok") {
+                                    // Chiudo il modal
+                                    $('#passwordModal').modal('hide');
+                                } else {
+                                    alert("Errore: " + response);
+                                }
+                            },
+                            error: function (err) {
+                                alert("Si è verificato un errore: " + err.responseText);
+                            }
+                        });
                     });
                 }
             });
         }
+
+
+
+        /** Carica la lista dei turni da /api/turni */
+        function loadTurni() {
+            $.ajax({
+                url: '/api/get-turni',
+                method: 'GET',
+                success: function (data) {
+                    // data dovrebbe essere un array di {id:..., nome:...} o simile
+                    let turnoSelect = $('#turnoSelect');
+                    turnoSelect.empty();
+                    turnoSelect.append('<option value="all">Tutti i Turni</option>');
+                    data.forEach(turno => {
+                        turnoSelect.append(`<option value="${turno}">Turno ${turno}</option>`);
+                    });
+                },
+                error: function (err) {
+                    console.error(err);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            loadTurni();
+
+            // 2) Al cambio di turno, carica gli utenti
+            $('#turnoSelect').on('change', function () {
+                let turnoId = $(this).val();
+                loadAccounts(turnoId);
+            });
+
+            // Assegno l'evento 'click' a #clearAllConfirmBtn una volta per tutte
+            $('#clearAllConfirmBtn').on('click', function () {
+                document.getElementById("deleting-overlay").classList.add("active");
+                $.ajax({
+                    url: '/admin/clear_session',
+                    method: 'GET',
+                    success: function () {
+                        document.getElementById("deleting-overlay").classList.remove("active");
+                        // Chiudi il modal
+                        $('#clearAllModal').modal('hide');
+                    },
+                    error: function (err) {
+                        document.getElementById("deleting-overlay").classList.remove("active");
+                        alert('Error clearing all: ' + err);
+                    }
+                });
+            });
+
+            // il resto delle tue logiche: .menu-item click, etc.
+        });
+
+
+        function changeUserPassword(serialNumber) {
+            let pass1 = prompt("Inserisci la nuova password:");
+            if (!pass1) return;  // se l'utente annulla
+
+            let pass2 = prompt("Conferma la nuova password:");
+            if (!pass2) return;
+
+            if (pass1 !== pass2) {
+                alert("Le password non combaciano!");
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/change_password',
+                method: 'POST',
+                data: {
+                    serialNumber: serialNumber,
+                    password: pass1
+                },
+                success: function (response) {
+                    if (response === "ok") {
+                        alert("Password aggiornata con successo!");
+                    } else {
+                        alert("Errore: " + response);
+                    }
+                },
+                error: function (err) {
+                    alert("Si è verificato un errore: " + err.responseText);
+                }
+            });
+        }
+
     </script>
 </body>
+
 </html>

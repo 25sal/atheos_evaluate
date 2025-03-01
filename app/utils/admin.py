@@ -93,6 +93,13 @@ def gen_passwords(n_pass):
        
     return passwords
         
+def hash_password(password):
+    sha_hash = generate_password_hash(password,"sha256")
+    bytes = password.encode('utf-8')
+    import bcrypt
+    salt = bcrypt.gensalt()
+    bc_hash = bcrypt.hashpw(bytes, salt)
+    return sha_hash, bc_hash
 
 
 def update_atheos_projects(users, projects_file, prj_dir):
@@ -106,6 +113,20 @@ def update_atheos_projects(users, projects_file, prj_dir):
         jsobj[user[0]]= prj_dir+"/"+user[0]+"/"+user[1]
     fout = open(projects_file, "w")
     json.dump(jsobj, fout,indent=4)  
+
+
+def update_atheos_user(userToChange, bc_hash):
+    fin = open("/var/www/html/data/users.json", "r")
+    jsobj = json.load(fin)
+    fin.close()
+    keys = jsobj.keys()
+    for user in keys:
+        if user == userToChange:
+            jsobj[user]["password"] = bc_hash.decode("utf-8")
+    fout = open("/var/www/html/data/users.json", "w")
+    json.dump(jsobj, fout,indent=4)  
+
+
 
 def restrict_atheos_acl(users_file, users, proj_dir):
     fin = open(users_file, "r")
@@ -132,7 +153,38 @@ def create_random_projects(n_users, test_ids):
         user_tests.append(test_ids[exercise])
 
     return user_tests
-       
+
+
+def delete_user_dirs(user):
+    users_dir = "/home/evaluatex/users"
+    prj_dir = users_dir+"/"+user
+    if os.path.isdir(prj_dir):
+        shutil.rmtree(prj_dir)
+    atheos_dir = "/var/www/html/data/"
+    prj_dir = atheos_dir+"/"+user
+    if os.path.isdir(prj_dir):
+        shutil.rmtree(prj_dir)
+    
+def delete_atheos_user(user):
+    fin = open("/var/www/html/data/users.json", "r")
+    jsobj = json.load(fin)
+    fin.close()
+    keys = jsobj.keys()
+    if user in keys:
+        del jsobj[user]
+    fout = open("/var/www/html/data/users.json", "w")
+    json.dump(jsobj, fout,indent=4)
+
+def delete_atheos_projects(user):
+    fin = open("/var/www/html/data/projects.db.json", "r")
+    jsobj = json.load(fin)
+    fin.close()
+    keys = jsobj.keys()
+    if user in keys:
+        del jsobj[user]
+    fout = open("/var/www/html/data/projects.db.json", "w")
+    json.dump(jsobj, fout,indent=4)
+
 def delete_prj_dirs(data_dir, users_dir, projects):
     for project in projects:
         prj_dir = users_dir+"/"+project[0]+"/"+project[1]  

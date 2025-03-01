@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Assegna Tracce</title>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='fonts/fontawesome-all.min.css')}}">
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous">
+    </script>
+
+    <!-- Popper + Bootstrap 4 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" crossorigin="anonymous">
+    </script>
+
+
+    <style>
+        .chart-container {
+            width: 80%;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .table thead.table-primary {
+            /* Sfumatura identica */
+            background: var(--gradient-bg);
+            color: #fff;
+        }
+
+        h3 {
+            font-weight: 600;
+        }
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #57CC99;
+
+            /* Ti crei una variabile “gradient-bg” che userai ovunque ti serva la sfumatura */
+            --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        /* Forza #descriptionModal a stare sopra tutto */
+        #descriptionModal {
+            z-index: 9999 !important;
+        }
+
+        /* Se necessario, regola anche la finestra interna del modal */
+        #descriptionModal .modal-dialog {
+            z-index: 10000 !important;
+        }
+
+        /* 🔹 Overlay a schermo intero */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            /* Sfondo nero semi-trasparente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            visibility: hidden;
+            /* Inizialmente nascosto */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* 🔹 Mostra il loader */
+        #loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 🔹 Stile del box di caricamento */
+        .loading-spinner {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-light" role="status">
+            </div>
+            <p>Attendere, sto creando i progetti...</p>
+        </div>
+    </div>
+
+    <h3 class="text-primary">Selezione Turno</h3>
+
+    <div class="container mt-4">
+
+        <!-- Dropdown turni -->
+        <div class="form-group">
+            <label for="turnoSelect">Turno</label>
+            <select id="turnoSelect" class="form-control w-auto">
+                <!-- Popolato dinamicamente -->
+            </select>
+        </div>
+
+        <hr>
+
+        <!-- Tabella utenti -->
+        <h3 class="text-primary">Utenti</h3>
+        <button class="btn btn-primary mb-3" id="assegnaTracceBtn" disabled>
+            Re-Assegna Tracce
+        </button>
+        <div class="mb-3">
+            <button id="btnInfTriennali" class="btn btn-info mr-2">
+                Seleziona Informatici Triennali
+            </button>
+            <button id="btnMagistrali" class="btn btn-success mr-2">
+                Seleziona Magistrali
+            </button>
+            <button id="btnBiomedici" class="btn btn-warning">
+                Seleziona Biomedici
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-light table-striped" id="usersTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Matricola</th>
+                        <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Assegnato</th>
+                        <th>Seleziona</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Righe generate dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+
+
+
+    <!-- Modal per visualizzare la descrizione (HTML) -->
+    <div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h3 class="text-primary" id="descriptionModalLabel">Dettagli Esercizio</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Chiudi">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Qui inseriremo l’HTML della descrizione -->
+                <div class="modal-body" id="descriptionContent">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal per la selezione delle tracce -->
+    <div class="modal fade" id="tracceModal" tabindex="-1" role="dialog" aria-labelledby="tracceModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h3 class="text-primary" id="tracceModalLabel">Quali tracce vuoi assegnare?</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Chiudi">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="mr-2">Filtra per Linguaggio:</label>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input lang-filter" type="checkbox" id="langC" data-lang="c"
+                                checked>
+                            <label class="form-check-label" for="langC">C</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input lang-filter" type="checkbox" id="langCpp" data-lang="cpp">
+                            <label class="form-check-label" for="langCpp">C++</label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input lang-filter" type="checkbox" id="langVhdl" data-lang="vhdl">
+                            <label class="form-check-label" for="langVhdl">VHDL</label>
+                        </div>
+                    </div>
+
+                    <!-- Tabella delle tracce -->
+                    <div class="table-responsive">
+                        <table class="table table-light table-striped" id="tracksTable">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>ID Traccia</th>
+                                    <th>Titolo</th>
+                                    <th>Folder</th>
+                                    <th>Linguaggio</th>
+                                    <th>Description</th>
+                                    <th>Seleziona</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Righe generate dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Annulla
+                    </button>
+                    <button type="button" class="btn btn-success" id="confermaAssegnazioneBtn">
+                        Re-Assegna
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery e Popper/Bootstrap 4 JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" crossorigin="anonymous">
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // 1) Carica la lista dei turni all'avvio
+            loadTurni();
+
+            // 2) Al cambio di turno, carica gli utenti
+            $('#turnoSelect').on('change', function () {
+                let turnoId = $(this).val();
+                loadUsersByTurno(turnoId);
+            });
+
+            // 3) Al clic su "Assegna Tracce", apri il modal e carica la lista di tracce
+            $('#assegnaTracceBtn').on('click', function () {
+                // Carica le tracce
+                loadTracce();
+                // Apri il modal
+                $('#tracceModal').modal('show');
+            });
+            function getSelectedLanguage() {
+                let checkedLang = $('.lang-filter:checked');
+                if (checkedLang.length === 0) {
+                    return "c"; // o "c" di default, se preferisci
+                }
+                return checkedLang.data('lang'); // "c", "cpp", o "vhdl"
+            }
+            // 4) Al clic su "Assegna" nel modal, invia i dati e aggiorna la tabella
+            $('#confermaAssegnazioneBtn').on('click', function () {
+                document.getElementById("loading-overlay").classList.add("active");
+
+                // 4a) Raccogli gli ID utente selezionati
+                let selectedUsers = [];
+                $('#usersTable tbody .user-select:checked').each(function () {
+                    selectedUsers.push($(this).data('userid'));
+                });
+
+                // 4b) Raccogli gli ID traccia selezionati
+                let selectedTracks = [];
+                $('#tracksTable tbody .track-select:checked').each(function () {
+                    selectedTracks.push($(this).data('trackid'));
+                });
+                let lang = getSelectedLanguage(); // "c", "cpp", o "vhdl"
+
+                // 4c) Chiamata API per assegnare
+                // Esempio: POST /api/assegna_tracce
+                $.ajax({
+                    url: '/api/modifica_assegnazione',
+                    method: 'POST',
+                    data: {
+                        utenti: JSON.stringify(selectedUsers),
+                        tracce: JSON.stringify(selectedTracks),
+                        random: true,
+                        lang: lang
+                    },
+                    success: function (resp) {
+                        // Chiudi il modal
+                        document.getElementById("loading-overlay").classList.remove("active");
+                        $('#tracceModal').modal('hide');
+                        // Ricarica la tabella utenti per riflettere "assegnato"
+                        let turnoId = $('#turnoSelect').val();
+                        loadUsersByTurno(turnoId);
+                    },
+                    error: function (err) {
+                        document.getElementById("loading-overlay").classList.remove("active");
+                        alert('Errore nell\'assegnazione delle tracce');
+                        console.error(err);
+                    }
+                });
+            });
+        });
+
+        /** Carica la lista dei turni da /api/turni */
+        function loadTurni() {
+            $.ajax({
+                url: '/api/get-turni',
+                method: 'GET',
+                success: function (data) {
+                    // data dovrebbe essere un array di {id:..., nome:...} o simile
+                    let turnoSelect = $('#turnoSelect');
+                    turnoSelect.empty();
+                    turnoSelect.append('<option value="all">Tutti i turni</option>');
+                    data.forEach(turno => {
+                        turnoSelect.append(`<option value="${turno}">Turno ${turno}</option>`);
+                    });
+                    loadUsersByTurno(turnoSelect.val());
+                },
+                error: function (err) {
+                    alert('Errore nel caricamento dei turni');
+                    console.error(err);
+                }
+            });
+        }
+
+        /** Carica la lista degli utenti per un dato turno */
+        function loadUsersByTurno(turnoId) {
+            if (!turnoId) {
+                // Nessun turno selezionato
+                $('#usersTable tbody').empty();
+                $('#assegnaTracceBtn').prop('disabled', true);
+                return;
+            }
+
+            $.ajax({
+                url: `/api/users_by_turno_assigned?turno=${turnoId}`,
+                method: 'GET',
+                success: function (data) {
+                    // data è un array di {matricola, nome, cognome, assegnato(0/1), user_id}
+                    let tbody = $('#usersTable tbody');
+                    tbody.empty();
+
+                    data.forEach(user => {
+                        let assignedIcon = user.assegnato == 1
+                            ? '<i class="text-success fas fa-check"></i>'
+                            : '<i class="text-danger fas fa-times"></i>';
+
+                        let tr = $(`
+          <tr>
+            <td>${user.matricola}</td>
+            <td>${user.nome}</td>
+            <td>${user.cognome}</td>
+            <td class="text-center">${assignedIcon}</td>
+            <td class="text-center">
+              <input 
+                type="checkbox" 
+                class="user-select" 
+                data-userid="${user.matricola}"
+              >
+            </td>
+          </tr>
+        `);
+                        tbody.append(tr);
+                    });
+
+                    // Se ci sono utenti, abilita il bottone "Assegna Tracce"
+                    $('#assegnaTracceBtn').prop('disabled', data.length === 0);
+                },
+                error: function (err) {
+                    alert('Errore nel caricamento degli utenti');
+                    console.error(err);
+                }
+            });
+        }
+
+        /** Carica la lista di tracce da /api/tracce e popola la tabella tracksTable */
+        function loadTracce() {
+            $.ajax({
+                url: '/api/get-tracce_attive',
+                method: 'GET',
+                success: function (data) {
+                    // data: array di {id, titolo, ...}
+                    let tbody = $('#tracksTable tbody');
+                    tbody.empty();
+
+                    data.forEach(track => {
+                        let tr = $(`
+          <tr>
+            <td>${track.id}</td>
+            <td>${track.title}</td>
+            <td>${track.folder}</td>
+            <td data-language="${track.language}">${track.language}</td>
+            <td>
+              <button class="btn btn-info btn-sm btn-description">
+                Visualizza
+              </button>
+            </td>
+            <td>
+
+              <input 
+                type="checkbox" 
+                class="track-select" 
+                data-trackid="${track.id}"
+              >
+            </td>
+          </tr>
+        `);
+                        tr.find('.btn-description').on('click', function () {
+                            // Apri il modal con l’HTML contenuto
+                            $('#descriptionContent').html(track.description); // row.description è l’HTML BLOB
+                            $('#descriptionModal').modal('show');
+                        });
+                        tbody.append(tr);
+                    });
+                    applyLangFilter();
+                },
+                error: function (err) {
+                    alert('Errore nel caricamento delle tracce');
+                    console.error(err);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // Pulsante "Informatici Triennali" (matricola inizia per a13)
+            $('#btnInfTriennali').on('click', function () {
+                // 1) Deseleziona tutto
+                $('.user-select').prop('checked', false);
+
+                // 2) Seleziona chi ha matricola che inizia con 'a13'
+                $('.user-select').each(function () {
+                    let mat = $(this).data('userid');  // es. "a130123"
+                    if (mat && mat.startsWith('a13')) {
+                        $(this).prop('checked', true);
+                    }
+                });
+            });
+
+            // Pulsante "Magistrali" (matricola inizia per a18)
+            $('#btnMagistrali').on('click', function () {
+                // 1) Deseleziona tutto
+                $('.user-select').prop('checked', false);
+
+                // 2) Seleziona chi ha matricola che inizia con 'a18'
+                $('.user-select').each(function () {
+                    let mat = $(this).data('userid');
+                    if (mat && mat.startsWith('a18')) {
+                        $(this).prop('checked', true);
+                    }
+                });
+            });
+
+            // Pulsante "Biomedici" (matricola inizia per b04)
+            $('#btnBiomedici').on('click', function () {
+                // 1) Deseleziona tutto
+                $('.user-select').prop('checked', false);
+
+                // 2) Seleziona chi ha matricola che inizia con 'b04'
+                $('.user-select').each(function () {
+                    let mat = $(this).data('userid');
+                    if (mat && mat.startsWith('b04')) {
+                        $(this).prop('checked', true);
+                    }
+                });
+            });
+        });
+        function applyLangFilter() {
+            // Scopri quale checkbox lang-filter è selezionata
+            let checkedBox = $('.lang-filter:checked');
+            if (checkedBox.length === 0) {
+                // Se per qualche motivo nessuna è selezionata, non facciamo nulla
+                return;
+            }
+
+            // Otteniamo il linguaggio
+            let selectedLang = checkedBox.data('lang');
+
+            // 1) Deseleziona tutte le track-select
+            $('.track-select').prop('checked', false);
+
+            // 2) Seleziona solo le tracce con data-language = selectedLang
+            $('#tracksTable tbody tr').each(function () {
+                // Cerco la <td data-language="..."> dentro il tr
+                let rowLang = $(this).find('td[data-language]').data('language');
+                if (rowLang === selectedLang) {
+                    $(this).find('.track-select').prop('checked', true);
+                }
+            });
+        }
+        $('.lang-filter').on('change', function () {
+            // Se l'utente seleziona questa, deseleziona le altre
+            if ($(this).is(':checked')) {
+                // esclusive: uncheck le altre .lang-filter
+                $('.lang-filter').not(this).prop('checked', false);
+            }
+            // Applica il filtro
+            applyLangFilter();
+        });
+        $('#assegnaTracceBtn').on('click', function () {
+            loadTracce();
+            // Apri il modal
+            $('#tracceModal').modal('show');
+        });
+    </script>
+
+</body>
+
+</html>

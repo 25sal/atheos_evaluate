@@ -9,7 +9,7 @@ import csv
 from app.config import Config
 from app.models.base import list_res_accounts, delete_res_accounts, delete_all, list_logged_accounts, list_projects
 import app.models.base as model_base
-from app.utils.admin import import_reservations, gen_passwords, add_atheos_users, create_random_projects, update_atheos_projects, create_prj_dirs, restrict_atheos_acl, delete_prj_dirs
+from app.utils.admin import import_reservations, gen_passwords, add_atheos_users, create_random_projects, update_atheos_projects, create_prj_dirs, restrict_atheos_acl, delete_prj_dirs, hash_password, update_atheos_user, delete_user_dirs, delete_atheos_projects, delete_atheos_user
 # Create a permission with a single Need, in this case a RoleNeed.
 from flask_principal import Permission, RoleNeed
 import numpy as np
@@ -319,10 +319,125 @@ def get_analytics():
 def get_users():
     return jsonify(get_users_list())
 
+@admin_bp.route('/api/get-turni')
+def get_turni():
+
+    turni = model_base.getTurni()
+    if(not turni):
+        return jsonify([])
+    turni_list = [row[0] for row in turni]
+    
+    return jsonify(turni_list)
+
+
+@admin_bp.route('/api/get-tracce_attive')
+def get_tracce_attive():
+
+    turni = model_base.getTracceAttive()
+    result = []
+    for r in turni:
+        temp = dict(r._mapping)
+        try:
+            temp['description'] = temp['description'].decode('utf-8')
+            result.append(temp)
+
+        except:
+            pass
+    return jsonify(result)
+
+
+
+@admin_bp.route('/api/users_by_turno', methods=['GET'])
+def users_by_turno():
+    turno_id = request.args.get('turno')
+    if not turno_id:
+        return jsonify([])  # oppure un errore 400
+    
+    rows = model_base.getUsersByTurno(turno_id)
+    data = []
+    for r in rows:
+        user_dict = {
+            "matricola": r[0],
+            "nome": r[1],
+            "cognome": r[2],
+            "assegnato": r[3]
+        }
+        data.append(user_dict)
+
+    return jsonify(data), 200
+
+
+
+@admin_bp.route('/api/users_by_turno_assigned', methods=['GET'])
+def users_by_turno_assigned():
+    turno_id = request.args.get('turno')
+    if not turno_id:
+        return jsonify([])  # oppure un errore 400
+    
+    rows = model_base.getUsersByTurno_AssignedOnly(turno_id)
+    data = []
+    if(not rows):
+        return ""
+    for r in rows:
+        user_dict = {
+            "matricola": r[0],
+            "nome": r[1],
+            "cognome": r[2],
+            "assegnato": r[3]
+        }
+        data.append(user_dict)
+
+    return jsonify(data), 200
+
+
 
 @admin_bp.route('/charts')
 def charts_page():
     return render_template('admin/charts.html')
+
+
+@admin_bp.route('/admin/assign_exercises')
+def assign_exercises_page():
+    return render_template('admin/assign_exercise.html')
+
+@admin_bp.route('/admin/reassign_exercises')
+def reassign_exercises_page():
+    return render_template('admin/re_assign_exercise.html')
+
+
+@admin_bp.route('/admin/exercises')
+def exercise_page():
+    return render_template('admin/exercises.html')
+
+@admin_bp.route('/api/exercises', methods=['GET'])
+def get_exercises():
+    """Restituisce l'elenco di tutti gli esercizi in formato JSON."""
+    exercises = model_base.getAllExercices()
+    # Convertiamo ciascun Exercise in dict
+    result = []
+    for r in exercises:
+        temp = dict(r._mapping)
+        try:
+            temp['description'] = temp['description'].decode('utf-8')
+            result.append(temp)
+
+        except:
+            pass
+    return jsonify(result), 200
+
+
+@admin_bp.route('/api/exercises/switchExercise', methods=['POST'])
+def set_exercise_is_exam():
+    """Restituisce l'elenco di tutti gli esercizi in formato JSON."""
+    request_id = request.form.get('id')
+    request_new_value = request.form.get('attivo')
+
+    exercises = model_base.setExerciseActive(request_id,request_new_value )
+    # Convertiamo ciascun Exercise in dict
+    
+    return "200"
+
+
 
 @admin_bp.route('/user_charts')
 def user_charts():
@@ -431,53 +546,180 @@ def update_password():
 def download_passwords():
     return send_file(Config.data_dir+"/passwords.csv", as_attachment=True)
  
-
+@admin_bp.route('/admin/list_existing_shifts', methods=['GET'])
+def list_existing_shifts():
+    # Esempio: SELECT turno, COUNT(*) FROM reserved_users GROUP BY turno
+    rows = model_base.list_by_turno()
+    # rows: [(1, 10), (2, 5), ...]
+    data = []
+    for r in rows:
+        data.append({
+            "turno_id": r[0],
+            "count_users": r[1]
+        })
+    return jsonify(data)
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() ==  'csv'
 
 
-@admin_bp.route('/admin/upload_users', methods = ['POST'])
+@admin_bp.route('/admin/new_accounts', methods=['GET'])
+@login_required
+@admin_role.require(401)
+def new_accounts():
+    return render_template("admin/new_accounts.html")
+
+
+@admin_bp.route('/admin/list_password_files', methods=['GET'])
+@login_required
+@admin_role.require(401)
+def list_password_files():
+    csv_files = []
+    for filename in os.listdir(Config.data_dir):
+        if filename.startswith("passwords_turno_") and filename.endswith(".csv"):
+            csv_files.append(filename)
+    
+    return render_template("admin/list_password_files.html", csv_files=csv_files)
+
+@admin_bp.route('/admin/download_password_file/<path:filename>', methods=['GET'])
+@login_required
+@admin_role.require(401)
+def download_password_file(filename):
+    return send_file(Config.data_dir+"/"+filename, as_attachment=True)
+
+
+@admin_bp.route('/admin/upload_users', methods=['POST'])
 @login_required
 @admin_role.require(401)
 def upload_users():
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
+        files = request.files
+        turno_files = {}  # Dizionario per associare file e turno
+
+        for key in files:
+            if key.startswith('file_'):  # Identifica i file dei turni
+                turno_id = request.form.get(f'turno_id_{key.split("_")[1]}')
+                file = files[key]
+
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(f"turno_{turno_id}_{file.filename}")
+                    file_path = os.path.join(Config.data_dir, filename)
+                    file.save(file_path)
+                    
+                    turno_files[turno_id] = file_path
+
+        if not turno_files:
+            flash('Nessun file valido caricato.')
             return redirect(request.url)
-        file = request.files['file']
-      
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == '':
-            flash('No file selected')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(Config.data_dir, filename))
-            users = import_reservations(os.path.join(Config.data_dir, filename))
+
+        # Elaborazione dei file caricati
+        for turno_id, file_path in turno_files.items():
+            users = import_reservations(file_path)
             passwords = gen_passwords(len(users))
-            model_base.create_reservations(np.hstack((users,passwords)))
-            model_base.create_bc_passwords(np.hstack((users[:,0].reshape(-1,1).reshape(-1,1), passwords[:,2].reshape(-1,1))))
-            add_atheos_users(np.hstack((users[:,0].reshape(-1,1),passwords[:,2].reshape(-1,1))), Config.atheos_dir+"/data/users.json")
-            with open(os.path.join(Config.data_dir, "passwords.csv"), 'w') as f:
-                csv.writer(f).writerows(np.hstack((users[:,:3], passwords[:,0].reshape(-1,1))))
-            return send_file(Config.data_dir+"/passwords.csv", as_attachment=True)
+
+            # Creazione delle prenotazioni con l'ID turno
+            model_base.create_reservations(np.hstack((users, passwords)), turno_id)
+            model_base.create_bc_passwords(np.hstack((users[:, 0].reshape(-1, 1), passwords[:, 2].reshape(-1, 1))))
+            add_atheos_users(np.hstack((users[:, 0].reshape(-1, 1), passwords[:, 2].reshape(-1, 1))),
+                             Config.atheos_dir + "/data/users.json")
+            csv_filename = f"passwords_turno_{turno_id}.csv"
+            csv_path = os.path.join(Config.data_dir, csv_filename)
+            with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerows(np.hstack((users[:, :3], passwords[:, 0].reshape(-1, 1))))
+
+        flash('File caricati e password salvate con successo!')
+        return redirect(url_for('admin_blueprint.list_password_files'))
+
     return 0
 
 
 
-@admin_bp.route('/admin/create_projects', methods = ['POST'])
+@admin_bp.route('/admin/change_password', methods=['POST'])
+@login_required
+def change_password():
+        serial_number = request.form.get('serialNumber')
+        new_password = request.form.get('password')
+        if not serial_number or not new_password:
+            return "Dati mancanti", 400
+
+        # Genera l'hash come in gen_passwords
+        # 1) SHA-256
+        sha_hash, bc_hash = hash_password(new_password)
+        model_base.update_password(serial_number, sha_hash, bc_hash)
+        update_atheos_user(serial_number, bc_hash)
+        return "ok", 200
+
+
+
+
+
+@admin_bp.route('/admin/delete_users', methods=['POST'])
+@login_required
+def delete_user():
+        import json
+        users = json.loads(request.form.get('utenti'))
+        for(user) in users:
+            model_base.delete_single_res_accounts(user)
+            delete_user_dirs(user)
+            delete_atheos_user(user)
+            delete_atheos_projects(user)
+        return "ok", 200
+
+
+
+@admin_bp.route('/api/modifica_assegnazione', methods = ['POST'])
 @login_required
 @admin_role.require(401)
-def create_projects():
-    users = request.form.getlist('users[]')
+def modifica_assegnazione():
+    import json
+    users = json.loads(request.form.get('utenti'))
+    tracce_json = request.form.get('tracce')
     rand = request.form.get('random')
     lang =request.form.get('lang')
     test_name = request.form.get('test_name')
     desc = request.form.get('description')
+
+    if desc is None:
+        desc = ""
+    
+    exercises = model_base.getexercises(isexam=1,  lang=lang)
+    exercise_ids = [exercise[0] for exercise in exercises]
+    print(len(users), exercise_ids)
+    for user in users:
+        delete_user_dirs(user)
+    if rand:
+        projects = create_random_projects(len(users),exercise_ids)
+        users_new = np.hstack((np.array(users).reshape(-1,1),np.array(projects).reshape(-1,1)))
+      
+        model_base.update_projects(users_new, lang)
+        prj_dirs = []
+        for project in projects:
+            prj_dirs.append(model_base.getexercisefolder(project, isexam=1)[0])
+        user_projects = np.hstack((users_new[:,0].reshape(-1,1),np.array(prj_dirs).reshape(-1,1)))
+        create_prj_dirs(Config.data_dir, Config.users_dir, user_projects)
+        update_atheos_projects(user_projects, Config.atheos_dir+"/data/projects.db.json", Config.users_dir)
+        restrict_atheos_acl(Config.atheos_dir+"/data/users.json",user_projects,Config.users_dir)
+        model_base.setUsersAsAssigned(users)
+    return ""
+
+
+
+
+
+@admin_bp.route('/api/create_projects', methods = ['POST'])
+@login_required
+@admin_role.require(401)
+def create_projects():
+    import json
+    users = json.loads(request.form.get('utenti'))
+    tracce_json = request.form.get('tracce')
+    rand = request.form.get('random')
+    lang =request.form.get('lang')
+    test_name = request.form.get('test_name')
+    desc = request.form.get('description')
+
     if desc is None:
         desc = ""
     
@@ -487,16 +729,17 @@ def create_projects():
     
     if rand:
         projects = create_random_projects(len(users),exercise_ids)
-        users = np.hstack((np.array(users).reshape(-1,1),np.array(projects).reshape(-1,1)))
+        users_new = np.hstack((np.array(users).reshape(-1,1),np.array(projects).reshape(-1,1)))
       
-        model_base.create_projects(users, lang, test_name, desc)
+        model_base.create_projects(users_new, lang)
         prj_dirs = []
         for project in projects:
             prj_dirs.append(model_base.getexercisefolder(project, isexam=1)[0])
-        user_projects = np.hstack((users[:,0].reshape(-1,1),np.array(prj_dirs).reshape(-1,1)))
+        user_projects = np.hstack((users_new[:,0].reshape(-1,1),np.array(prj_dirs).reshape(-1,1)))
         create_prj_dirs(Config.data_dir, Config.users_dir, user_projects)
         update_atheos_projects(user_projects, Config.atheos_dir+"/data/projects.db.json", Config.users_dir)
         restrict_atheos_acl(Config.atheos_dir+"/data/users.json",user_projects,Config.users_dir)
+        model_base.setUsersAsAssigned(users)
     return ""
 
 
@@ -540,8 +783,7 @@ def exercise_list():
 @login_required
 @admin_role.require(401)
 def clear_session():
+    os.system("sh /home/evaluatex/data/restore.sh")
+
     model_base.clear_session()
-    return "delete  from checks;<br>delete  from checks_test;<br> \
-            delete from test_results;<br>delete  from connections;<br> \
-            delete  from projects;<br>delete from users;<br> \
-            delete from reserved_users;"
+    return ("", 204)

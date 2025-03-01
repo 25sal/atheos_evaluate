@@ -1,0 +1,9 @@
+rm  -rf /home/evaluatex/users/a13*
+rm -rf /home/evaluatex/users/b04*
+rm -rf  /var/www/html/data/a13*
+rm -rf  /var/www/html/data/b04*
+rm -rf  /var/www/html/data/a18*
+rm -rf /home/evaluatex/data/password*
+cp  /var/www/html/data/users.json_template /var/www/html/data/users.json
+cp  /var/www/html/data/projects.db.json_template /var/www/html/data/projects.db.json
+cp  /var/www/html/data/active.db.json_template /var/www/html/data/active.db.json

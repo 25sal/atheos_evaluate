@@ -251,6 +251,70 @@ def getexercisefolder(id,isexam):
     else:
         return None
 
+
+def setExerciseActive(id, newvalue):
+    t = text('UPDATE exercises SET isexam = :val1 where id= :val2')
+    db.session.execute(t,{'val1':newvalue,'val2':id})
+    db.session.commit()
+    return 0
+
+def getTurni():
+    t = text('SELECT DISTINCT user_group FROM reserved_users')
+    result = db.session.execute(t).fetchall()
+    if(result):
+        return result
+    else:
+        return None
+
+
+def getTracceAttive():
+    t = text('SELECT id,folder,language, description,title FROM exercises where isexam=1')
+    result = db.session.execute(t).fetchall()
+    if(result):
+        return result
+    else:
+        return None
+
+def getUsersByTurno(turno):
+    if(turno == 'all'):
+        t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users')
+        result = db.session.execute(t).fetchall()
+        if(result):
+            return result
+        else:
+            return None
+    t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users WHERE user_group= :val')
+    result = db.session.execute(t, {'val':turno}).fetchall()
+    if(result):
+        return result
+    else:
+        return None
+    
+
+def getUsersByTurno_AssignedOnly(turno):
+    if(turno == 'all'):
+        t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users where has_exercise=1')
+        result = db.session.execute(t).fetchall()
+        if(result):
+            return result
+        else:
+            return None
+    t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users WHERE user_group= :val and has_exercise=1')
+    result = db.session.execute(t, {'val':turno}).fetchall()
+    if(result):
+        return result
+    else:
+        return None
+
+
+def getAllExercices():
+    t = text('SELECT * FROM exercises')
+    result = db.session.execute(t).fetchall()
+    if(result):
+        return result
+    else:
+        return None
+
 def getexercisetext(id,isexam):
     t = text('SELECT description FROM exercises where isexam= :val1 and visible=1 and id= :val2')
     result = db.session.execute(t, {'val1': isexam, 'val2': id}).fetchall()
@@ -408,12 +472,30 @@ def delete_res_accounts(accounts):
         db.session.execute(query, {'val':account})
 
 
+def delete_single_res_accounts(account):
+    query = text("DELETE FROM atheos_users WHERE reserved_user = :val")
+    db.session.execute(query, {'val':account})
+    query = text("DELETE FROM reserved_users WHERE user = :val")
+    db.session.execute(query, {'val':account})
+    db.session.commit()
+
 def delete_all():
     query = 'delete  from checks; delete  from checks_test; delete from test_results;' \
             ' delete  from connections; delete  from projects; delete from users; delete from reserved_users'
     db.session.execute(query)
     return 0
 
+def update_password(serial_number, sha_pass, bc_hash):
+    db.session.execute(
+     text("UPDATE reserved_users SET password = :sha WHERE user = :sn"),
+    {"sha": sha_pass, "sn": serial_number}
+    )
+    db.session.execute(
+         text("UPDATE atheos_users SET bcrypt_password = :bc WHERE reserved_user = :sn"),
+        {"bc": bc_hash, "sn": serial_number}
+    )
+    db.session.commit()
+    return 0
 
 def list_projects():
     query = text("SELECT idexams, userid,  exercise , name, language, checked from projects");
@@ -421,11 +503,11 @@ def list_projects():
     if len(result) > 0:
         return result
 
-def create_reservations(users,set_passwd=True):
+def create_reservations(users, turno, set_passwd=True):
     for i in range(len(users)):
-        query = text("INSERT into reserved_users  (user,password,first_name,second_name,datetime,  checked) \
-                VALUES ( :matr,:passwd,:name, :surname, :datetime,  null)")
-        db.session.execute(query,{'matr':users[i][0],'surname':users[i][1],'name':users[i][2], 'datetime': '2023-09-01 00:00:00',  'passwd':users[i][5], })
+        query = text("INSERT into reserved_users  (user,password,first_name,second_name,datetime,  checked, user_group) \
+                VALUES ( :matr,:passwd,:name, :surname, :datetime,  null, :turno)")
+        db.session.execute(query,{'matr':users[i][0],'surname':users[i][1],'name':users[i][2], 'datetime': '2023-09-01 00:00:00',  'passwd':users[i][5], 'turno': turno})
         db.session.commit()
 
 def create_bc_passwords(users):
@@ -434,13 +516,31 @@ def create_bc_passwords(users):
         db.session.execute(query,{'val1':users[i][0],'val2':users[i][1]})
         db.session.commit()
 
-def create_projects(users, lang, test_name, description):
+def create_projects(users, lang):
     print(users)
     for user in users:
         query = text("INSERT projects (userid,name,description,language,exercise) \
             VALUES (:userid,:name, :desc,:lang,:exercise)")
-        db.session.execute(query,{'userid':user[0],'name':test_name,'desc':description, 'lang': lang,  'exercise':int(user[1])})
+        db.session.execute(query,{'userid':user[0],'name':"",'desc':"", 'lang': lang,  'exercise':int(user[1])})
         db.session.commit()
+
+def list_by_turno():
+    query = text("SELECT user_group, COUNT(*) as total FROM reserved_users GROUP BY user_group")
+    rows = db.session.execute(query).all()
+    return rows
+def update_projects(users, lang):
+    print(users)
+    for user in users:
+        query = text("UPDATE projects SET language = :lang, exercise = :exercise WHERE userid = :userid")
+        db.session.execute(query,{'userid':user[0], 'lang': lang, 'exercise':int(user[1])})
+        db.session.commit()
+
+def setUsersAsAssigned(users):
+    for user in users:
+        query = text("UPDATE reserved_users SET has_exercise = 1 WHERE user = :val")
+        db.session.execute(query,{'val':user})
+    db.session.commit()
+
 
 def delete_projects(ids):
     query = text("DELETE FROM projects where idexams=:project")

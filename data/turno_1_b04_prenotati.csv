@@ -1,0 +1,23 @@
+GRUPPO_GIUD_COD,339962_3,SUBSET,3,FLD_LIV_LINGUE,,,,,,,,,
+CDS_ID,10870,,,,,,,,,,,,
+AD_ID,15606,,,,,,,,,,,,
+APP_ID,20,,,,,,,,,,,,
+FIRST_ROW,20,FIRST_DYN_COL,8,,,,,,,,,,
+Attività Didattica [COD],,,,Corso di Studio [COD],,,,,,,,,
+ELEMENTI DI PROGRAMMAZIONE [A13050],,,,INGEGNERIA BIOMEDICA [B04],,,,,,,,,
+,,,,,,,,,,,,,
+Sessioni,,,Sessione Estiva [01/05/2024 - 30/09/2024],,,,,,,,,,
+Descrizione Appello,,,Appello orale Elementi di Programmazione,,,,,,,,,,
+Tipo di Prova,,,Orale,,,,,,,,,,
+Prenotazione (dal-al),,,21/08/2024 - 06/09/2024,,,,,,,,,,
+Date Appello,,,11/09/2024 - 09:30:00 - Nessun partizionamento - Appello orale Elementi di Programmazione - VIA MICHELANGELO,,,,,,,,,,
+Totale Studenti iscritti,,,3,,,,,,,,,,
+,,,,,,,,,,,,,
+Tipo Esito,,,"Voto in trentesimi (31 = 30L, ASS = Assente, 0 = Insufficiente, RIT = Ritirato)",,,,,,,,,,
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+Elenco Studenti Iscritti all'Appello,,,,,,,,,,,,,
+#,,Matricola,Cognome,Nome,Anno Freq.,CFU,,Esito,Domande d'esame,Data superamento,Nota per lo studente,Presa Visione,Email
+1,,B04000045,CIRILLO,ANNA,2022/2023,9,228596,,,,,N,anna.cirillo4@studenti.unicampania.it
+2,,B04000037,DIANA,LUCA,2022/2023,9,226724,,,,,N,luca.diana@studenti.unicampania.it
+3,,B04000101,NASCA,MARGHERITA,2022/2023,9,235282,,,,,N,margherita.nasca@studenti.unicampania.it

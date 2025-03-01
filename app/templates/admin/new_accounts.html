@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestione Turni</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}">
+    <style>
+        /* Overlay a tutto schermo */
+        #loadingexcel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            /* Sfondo nero semi-trasparente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            visibility: hidden;
+            /* Inizialmente nascosto */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* 🔹 Mostra il loader */
+        #loadingexcel-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 🔹 Stile del box di caricamento */
+        .loading-spinner {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .content {
+            margin-left: 220px;
+            /* same as sidebar width */
+            padding: 2rem;
+        }
+
+        .content-container {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+
+
+        h3 {
+            font-weight: 600;
+        }
+
+        .text-primary {
+            color: #4e73df !important;
+        }
+
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #57CC99;
+
+            /* Ti crei una variabile “gradient-bg” che userai ovunque ti serva la sfumatura */
+            --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .table thead.table-primary {
+            /* Sfumatura identica */
+            background: var(--gradient-bg);
+            color: #fff;
+        }
+
+        h3 {
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4 container-narrow">
+
+        <h3 class="text-primary">Turni Esistenti</h4>
+            <div class="table-responsive">
+                <table class="table table-light table-striped" id="existingShiftsTable">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Turno</th>
+                            <th>Utenti Associati</th>
+                        </tr>
+                    </thead>
+                    <tbody id="existingShiftsBody">
+                        <!-- Righe generate dinamicamente -->
+                    </tbody>
+                </table>
+
+                <hr>
+
+            </div> <button id="add-shift" class="btn btn-success mb-3">Aggiungi Turno</button>
+
+            <form id="uploadForm" action="/admin/upload_users" method="POST" enctype="multipart/form-data">
+                <div id="shifts-container"></div>
+                <button type="submit" class="btn btn-primary mt-3">Carica tutti i turni</button>
+            </form>
+    </div>
+    <!-- Overlay + Spinner -->
+    </div>
+
+    <div id="loadingexcel-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+            <p>Attendere, sto caricando le sessioni...</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            loadExistingShifts();  // Carica e mostra i turni già inseriti
+
+            // intercettiamo il "change" di TUTTI i .custom-file-input
+            $(document).on('change', '.custom-file-input', function (e) {
+                // Recuperiamo il nome del file
+                let fileName = e.target.files[0].name;
+                // Aggiorniamo il testo dell'etichetta corrispondente
+                $(this).next('.custom-file-label').text(fileName);
+            });
+            document.getElementById("loadingexcel-overlay").classList.remove("active");
+
+
+            // Gestione "Aggiungi Turno"
+            $('#add-shift').on('click', function () {
+                shiftCounter++;
+                let shiftRow = `
+  <div class="input-group mb-3">
+    <span class="input-group-text" id="inputGroupFileAddon_${shiftCounter}">Turno ${shiftCounter}</span>
+    <div class="custom-file">
+      <input 
+        type="file" 
+        class="custom-file-input" 
+        id="shift_${shiftCounter}"
+        name="file_${shiftCounter}" 
+        aria-describedby="inputGroupFileAddon_${shiftCounter}"
+        required
+      >
+      <label class="custom-file-label" for="shift_${shiftCounter}">
+        Scegli file
+      </label>
+    </div>
+  </div>
+
+  <!-- Campo nascosto per l'ID turno -->
+  <input type="hidden" name="turno_id_${shiftCounter}" value="${shiftCounter}">
+`;
+
+
+
+
+
+                $('#shifts-container').append(shiftRow);
+            });
+
+            // Mostra overlay quando si invia il form
+            $('#uploadForm').on('submit', function () {
+                document.getElementById("loadingexcel-overlay").classList.add("active");
+                // Non facciamo hide() perché la pagina verrà ricaricata
+            });
+        });
+        function loadExistingShifts() {
+            $.ajax({
+                url: '/admin/list_existing_shifts', // Esempio di endpoint
+                method: 'GET',
+                success: function (data) {
+                    // data: array di oggetti { turno_id: 1, count_users: 10 }
+                    let tbody = $('#existingShiftsBody');
+                    tbody.empty();
+
+                    let maxTurno = 0;
+
+                    data.forEach(shift => {
+                        if (shift.turno_id > maxTurno) {
+                            maxTurno = shift.turno_id;
+                        }
+                        let row = `
+              <tr>
+                <td>Turno ${shift.turno_id}</td>
+                <td>${shift.count_users}</td>
+              </tr>
+            `;
+                        tbody.append(row);
+                    });
+                    shiftCounter = maxTurno;
+
+                },
+                error: function (err) {
+                    console.error('Errore nel caricamento dei turni esistenti:', err);
+                }
+            });
+        }
+
+        $('#uploadForm').on('submit', function () {
+            // Mostra overlay
+            document.getElementById("loadingexcel-overlay").classList.add("active");
+
+            // Al termine (se usi AJAX per l’upload), potresti fare:
+            // loadExistingShifts();
+            // document.getElementById("loadingexcel-overlay").classList.remove("active");
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,33 @@
+{
+    "admin": {
+        "password": "$2y$10$wlSieKeKKShdClkSuGZUsOwc8U4b6FUpYq605oEvHp5BDSvdE66Q6",
+        "resetPassword": false,
+        "activeProject": "\/var\/www\/html\/",
+        "creationDate": "2023-07-13 12:09:56",
+        "lastLogin": "2023-08-06 11:38:59",
+        "permissions": [
+            "configure",
+            "read",
+            "write"
+        ],
+        "userACL": "full",
+        "activeName": "Atheos IDE",
+        "activePath": "\/var\/www\/html"
+    },
+    "test": {
+        "password": "$2y$10$BYyH.PV7hASoLeE4aKZTJOH47iXHcwWo64vx7DyFbLbfU2R3KjTK6",
+        "resetPassword": false,
+        "creationDate": "2023-07-12 23:10:23",
+        "activeProject": "",
+        "lastLogin": "2024-01-08 00:24:02",
+        "permissions": [
+            "read",
+            "write"
+        ],
+        "userACL": [
+            "\/home\/evaluatex\/users\/test\/c\/et2"
+        ],
+        "activeName": "test",
+        "activePath": "\/home\/evaluatex\/users\/test\/c\/et2"
+    }
+}
