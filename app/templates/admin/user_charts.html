@@ -6,18 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Git Analytics - Utente</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <!-- Bootstrap CSS dalla cartella static (stesso asset della pagina chiamante) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='fonts/fontawesome-all.min.css') }}">
     <!-- jQuery -->
-    <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 
     <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #57CC99;
+            --gradient-bg: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
         body {
-            background-color: #f8f9fa;
+            font-family: sans-serif;
+        }
+
+        h3 {
+            font-weight: 600;
         }
 
         .chart-container {
@@ -28,20 +38,49 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
+
+        /* Loader Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Loader overlay -->
+    <div id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-light" role="status"></div>
+            <p>Caricamento dati...</p>
+        </div>
+    </div>
 
     <div class="container mt-4">
-        <!-- Pulsante Torna Indietro -->
-        <div class="d-flex justify-content-start">
-            <a href="/charts" class="btn btn-secondary">⬅ Torna Indietro</a>
-        </div>
-
-        <h2 class="text-center mt-3">Git Analytics per <span id="username"></span></h2>
-
-        <!-- Indicazione se l'utente è sospetto -->
+        <h3 class="text-center" style="color: #6C63FF;">Git Analytics per <span id="username"></span></h3>
+        <!-- Stato dell'utente -->
         <div class="text-center mt-3">
             <h4 id="suspiciousStatus" class="fw-bold"></h4>
         </div>
@@ -53,22 +92,50 @@
         </div>
     </div>
 
+    <div class="container mt-4">
+        <h3 class="text-center" style="color: #6C63FF;">Codice Sorgente</h3>
+        <!-- Pulsanti sopra il codice -->
+        <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-success" onclick="copyCode()">📋 Copia Codice</button>
+
+            <a class="btn btn-info ms-2" href="https://copyleaks.com/ai-content-detector" target="_blank"
+                style="margin-left:10px;">
+                🔍 Verifica con Copyleaks
+            </a>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">File: <span id="fileName"></span></label>
+            <textarea id="codeContent" class="form-control" rows="10" readonly></textarea>
+        </div>
+    </div>
+
     <script>
         async function fetchUserAnalytics(username) {
             document.getElementById("username").textContent = username;
-            const response = await fetch(`/api/git-analytics/${username}`);
-            const data = await response.json();
+            // Mostra il loader
+            document.getElementById("loading-overlay").classList.add("active");
 
-            if (data.error) {
-                alert(data.error);
-                return;
+            try {
+                const response = await fetch(`/api/git-analytics/${username}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    document.getElementById("loading-overlay").classList.remove("active");
+                    return;
+                }
+
+                const commitHashes = data.map(commit => commit.commit.substring(0, 7)); // primi 7 caratteri
+                const linesAdded = data.map(commit => commit.lines_added);
+                const linesRemoved = data.map(commit => commit.lines_removed);
+
+                renderCommitChart(commitHashes, linesAdded, linesRemoved);
+            } catch (error) {
+                console.error("Errore nel caricamento dei dati:", error);
+            } finally {
+                // Nascondi il loader dopo il rendering del grafico
+                document.getElementById("loading-overlay").classList.remove("active");
             }
-
-            const commitHashes = data.map(commit => commit.commit.substring(0, 7)); // Mostra solo i primi 7 caratteri
-            const linesAdded = data.map(commit => commit.lines_added);
-            const linesRemoved = data.map(commit => commit.lines_removed);
-
-            renderCommitChart(commitHashes, linesAdded, linesRemoved);
         }
 
         function renderCommitChart(commitHashes, addedValues, removedValues) {
@@ -80,12 +147,12 @@
                         {
                             label: 'Lines Added',
                             data: addedValues,
-                            backgroundColor: 'green'
+                            backgroundColor: '#57CC99'
                         },
                         {
                             label: 'Lines Removed',
                             data: removedValues,
-                            backgroundColor: 'red'
+                            backgroundColor: '#6C63FF'
                         }
                     ]
                 },
@@ -98,71 +165,57 @@
             });
         }
 
-        // Recupera il nome utente e se è sospetto dalla query string (URL)
+        async function fetchUserCode(username) {
+            try {
+                const response = await fetch(`/api/get-code/${username}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById("codeContent").value = "Errore: " + data.error;
+                    return;
+                }
+
+                document.getElementById("fileName").textContent = data.filename;
+                document.getElementById("codeContent").value = data.content;
+            } catch (error) {
+                console.error("Errore nel caricamento del codice:", error);
+            }
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById("codeContent");
+            navigator.clipboard.writeText(codeText.value)
+                .then(() => {
+                    alert("Codice copiato negli appunti!");
+                })
+                .catch(err => {
+                    console.error("Errore nella copia del codice:", err);
+                });
+        }
+
+        // Recupera i parametri dalla query string
         const params = new URLSearchParams(window.location.search);
         const username = params.get("username");
-        const isSuspicious = params.get("is_suspicious") === "true"; // Converti in booleano
-        const has_spike = params.get("has_Spike") === "true"; // Converti in booleano
+        const isSuspicious = params.get("is_suspicious") === "true";
+        const has_spike = params.get("has_Spike") === "true";
 
         if (username) {
             fetchUserAnalytics(username);
-            document.getElementById("suspiciousStatus").textContent = isSuspicious || !has_spike
-                ? "⚠️ Il comportamento è sospetto!"
-                : "✅ Il comportamento è nella media!";
-            document.getElementById("suspiciousStatus").classList.add(isSuspicious || !has_spike ? "text-danger" : "text-success");
+            fetchUserCode(username);
+            document.getElementById("suspiciousStatus").textContent =
+                (isSuspicious || has_spike)
+                    ? "⚠️ Il comportamento è sospetto!"
+                    : "✅ Il comportamento è nella media!";
+            document.getElementById("suspiciousStatus").classList.add(
+                (isSuspicious || has_spike) ? "text-danger" : "text-success"
+            );
         } else {
             alert("Errore: nessun utente specificato.");
         }
     </script>
 
-
-    <div class="container mt-4">
-        <h3 class="text-center">Codice Sorgente</h3>
-
-        <!-- Pulsanti sopra il codice -->
-        <div class="d-flex justify-content-center gap-3 mb-3">
-            <button class="btn btn-primary" onclick="copyCode()">📋 Copia Codice</button>
-            <a class="btn btn-warning" href="https://copyleaks.com/ai-content-detector" target="_blank">🔍 Verifica con
-                Copyleaks</a>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">File: <span id="fileName"></span></label>
-            <textarea id="codeContent" class="form-control" rows="10" readonly></textarea>
-        </div>
-    </div>
-
-    <script>
-        async function fetchUserCode(username) {
-            const response = await fetch(`/api/get-code/${username}`);
-            const data = await response.json();
-
-            if (data.error) {
-                document.getElementById("codeContent").value = "Errore: " + data.error;
-                return;
-            }
-
-            document.getElementById("fileName").textContent = data.filename;
-            document.getElementById("codeContent").value = data.content;
-        }
-
-        function copyCode() {
-            const codeText = document.getElementById("codeContent");
-            navigator.clipboard.writeText(codeText.value).then(() => {
-                alert("Codice copiato negli appunti!");
-            }).catch(err => {
-                console.error("Errore nella copia del codice:", err);
-            });
-        }
-
-        if (username) {
-            fetchUserCode(username);
-        }
-    </script>
-
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 
 </html>

@@ -158,7 +158,7 @@ def get_lines_modified_per_commit(repo_path):
             current_commit = {"commit": line, "lines_added": 0, "lines_removed": 0}
         else:
             parts = line.split("\t")
-            if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit():
+            if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit() and parts[2]=="main.c":
                 file_path = parts[2]
 
                 # Controlla se il diff è solo di formattazione

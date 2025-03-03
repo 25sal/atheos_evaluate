@@ -78,13 +78,24 @@
         h3 {
             font-weight: 600;
         }
+
+        .container-narrow {
+            max-width: 600px;
+            /* Regola la larghezza massima come preferisci */
+            margin: 0 auto;
+        }
+
+        #existingShiftsTable th,
+        #existingShiftsTable td {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
     <div class="container mt-4 container-narrow">
 
-        <h3 class="text-primary">Turni Esistenti</h4>
+        <h3 class="text-center" style="color: #4e73df;">Turni Esistenti</h4>
             <div class="table-responsive">
                 <table class="table table-light table-striped" id="existingShiftsTable">
                     <thead class="table-primary">
@@ -97,15 +108,18 @@
                         <!-- Righe generate dinamicamente -->
                     </tbody>
                 </table>
+            </div>
+    </div>
 
-                <hr>
+    <div class="container mt-4">
+        <hr>
 
-            </div> <button id="add-shift" class="btn btn-success mb-3">Aggiungi Turno</button>
+        <button id="add-shift" class="btn btn-success mb-3">Aggiungi Turno</button>
 
-            <form id="uploadForm" action="/admin/upload_users" method="POST" enctype="multipart/form-data">
-                <div id="shifts-container"></div>
-                <button type="submit" class="btn btn-primary mt-3">Carica tutti i turni</button>
-            </form>
+        <form id="uploadForm" action="/admin/upload_users" method="POST" enctype="multipart/form-data">
+            <div id="shifts-container"></div>
+            <button type="submit" class="btn btn-primary mt-3">Carica tutti i turni</button>
+        </form>
     </div>
     <!-- Overlay + Spinner -->
     </div>

@@ -48,7 +48,22 @@
 
 <body>
     <!-- Sezione Upload Excel -->
-
+    <!-- Modal per dettagli utente -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Dettagli Utente</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="userDetailIframe" src="" width="100%" height="500px" style="border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         function uploadExcel() {
             const fileInput = document.getElementById("fileInput");
@@ -121,7 +136,7 @@
     </style>
 
     <div class="file-upload-container">
-        <h4>Carica Excel per Rimozione Utenti</h4>
+        <h3 class="text-primary">Carica Excel per Rimozione Utenti</h3>
         <div class="input-group mb-3">
 
             <div class="input-group-prepend">
@@ -198,7 +213,7 @@
                     ${hasLargeCommitSpike ? "📈 Spike" : "✔ Normale"}
                 </td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="viewUser('${user}', '${isSuspicious}', '${hasLargeCommitSpike}')">Dettagli</button>
+    <button class="btn btn-primary btn-sm" onclick="viewUser('${user}', '${isSuspicious}', '${hasLargeCommitSpike}')">Dettagli</button>
                 </td>
             `;
 
@@ -218,7 +233,14 @@
 
 
         function viewUser(username, isSuspicious, hasLargeCommitSpike) {
-            window.open(`/user_charts?username=${username}&is_suspicious=${isSuspicious}$has_Spike=${hasLargeCommitSpike}`, '_blank');
+            // Costruisci l'URL dei dettagli dell'utente
+            const url = `/user_charts?username=${username}&is_suspicious=${isSuspicious}&has_Spike=${hasLargeCommitSpike}`;
+            // Imposta l'URL nell'iframe
+            document.getElementById("userDetailIframe").src = url;
+            // Crea e mostra il modal usando Bootstrap 5
+            const userModalEl = document.getElementById("userModal");
+            const userModal = new bootstrap.Modal(userModalEl);
+            userModal.show();
         }
 
         function renderChart(canvasId, labels, values, label, globalMean) {

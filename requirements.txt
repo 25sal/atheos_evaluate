@@ -26,3 +26,4 @@ flask_jwt_extended
 pandas
 requests
 openpyxl
+pygit2

@@ -21,6 +21,64 @@
 
 
     <style>
+        /* Nascondi l'input checkbox originale */
+        /* Nascondi l'input originale */
+        .switchToggle input[type=checkbox] {
+            position: absolute;
+            width: 0;
+            height: 0;
+            visibility: hidden;
+        }
+
+        /* Contenitore del toggle */
+        .switchToggle label {
+            cursor: pointer;
+            text-indent: -9999px;
+            /* Nasconde eventuale testo interno */
+            width: 50px;
+            /* Larghezza più piccola */
+            height: 24px;
+            /* Altezza più piccola */
+            background: #ccc;
+            /* Colore “off” */
+            display: inline-block;
+            border-radius: 12px;
+            /* Per fare i bordi arrotondati */
+            position: relative;
+            transition: background 0.25s ease-out;
+            /* Animazione più semplice */
+        }
+
+        /* “Pallino” interno */
+        .switchToggle label:after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.25s ease-out;
+        }
+
+        /* Quando la checkbox è checked, cambia sfondo */
+        .switchToggle input:checked+label {
+            background: var(--gradient-bg);
+            /* Un verde tenue */
+        }
+
+        /* Sposta il pallino a destra */
+        .switchToggle input:checked+label:after {
+            left: calc(100% - 2px);
+            transform: translateX(-100%);
+        }
+
+
+
+
+
+
         .chart-container {
             width: 80%;
             margin: 20px auto;
@@ -135,8 +193,10 @@
               </button>
             </td>
             <td>
-
-              <input type="checkbox" class="toggle-attivo" data-id="${row.id}" data-current="${row.isexam}" ${checkedAttr}>
+<div class="switchToggle">
+    <input type="checkbox" id="${row.id}" class="toggle-attivo" data-id="${row.id}" data-current="${row.isexam}" ${checkedAttr}>
+    <label for="${row.id}">Toggle</label>
+</div>
             </td>
           </tr>
         `);

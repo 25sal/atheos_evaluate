@@ -95,7 +95,7 @@ def get_user_code(username):
         return jsonify({"error": str(e)}), 500
 
 
-def detect_ai_generated_code(file_path):
+def detect_ai_generated_code_old(file_path):
     """ Analizza il codice e verifica se è stato scritto da un'AI """
     
     # Legge il codice sorgente
@@ -171,81 +171,133 @@ def upload_excel():
     except Exception as e:
         return jsonify({"message": f"Errore nel processamento del file: {str(e)}"}), 500
     
-def get_git_analytics():
-    """ Scansiona la cartella degli utenti e raccoglie le metriche Git e del codice sorgente. """
-    analytics = {}
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
+# BASE_DIR deve essere definito, ad esempio:
+# BASE_DIR = "/path/to/users"
+
+# Supponiamo che detect_large_commit_spike e get_average_commit_interval_from_logs siano definite altrove
+# ad esempio:
+# def detect_large_commit_spike(repo_path, threshold_multiplier=3.5): ...
+# def get_average_commit_interval_from_logs(repo_path): ...
+
+def detect_ai_generated_code(file_path):
+    """ 
+    Analizza il codice e verifica se è stato scritto da un'AI.
+    Legge il file con gestione degli errori di decodifica.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+            code = f.read()
+    except Exception:
+        code = ""
+    
+    # 🔹 1. Controllo della Complessità (Lunghezza media delle funzioni)
+    functions = re.findall(r'\w+\s+\w+\(.*?\)\s*{', code, re.DOTALL)
+    avg_function_length = sum(len(f) for f in functions) / max(len(functions), 1)
+    
+    # 🔹 2. Controllo dei Commenti
+    comments = re.findall(r'//.*?$|/\*.*?\*/', code, re.DOTALL | re.MULTILINE)
+    comment_ratio = len(comments)
+    
+    return {
+        "avg_function_length": avg_function_length,
+        "comment_ratio": comment_ratio
+    }
+
+def process_user(user):
+    """
+    Elabora le metriche per un singolo utente.
+    All'interno di questo processo, utilizza un ThreadPoolExecutor per parallelizzare:
+      - l'analisi dei commit sospetti (detect_large_commit_spike)
+      - il calcolo degli intervalli medi (get_average_commit_interval_from_logs)
+      - l'analisi del codice sorgente (detect_ai_generated_code)
+    Ritorna una tupla (user, user_data) oppure None se l'utente non è valido.
+    """
+    user_path = os.path.join(BASE_DIR, user, "c")
+    if not os.path.isdir(user_path):
+        return None
+
+    subfolders = [f for f in os.listdir(user_path)
+                  if os.path.isdir(os.path.join(user_path, f)) and f != "sandbox"]
+    if not subfolders:
+        return None
+
+    repo_folder = os.path.join(user_path, subfolders[0])
+    valid_folder = os.path.join(repo_folder, ".git")
+    if not os.path.exists(valid_folder):
+        return None
+
+    # Cerca il file .c dell'utente
+    c_files = [f for f in os.listdir(repo_folder) if f.endswith(".c")]
+    c_file_path = os.path.join(repo_folder, c_files[0]) if c_files else None
+
+    # Parallelizza le operazioni pesanti usando un ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        future_commit_analysis = executor.submit(detect_large_commit_spike, valid_folder)
+        future_log_analysis = executor.submit(get_average_commit_interval_from_logs, valid_folder)
+        if c_file_path:
+            future_code_metrics = executor.submit(detect_ai_generated_code, c_file_path)
+        else:
+            future_code_metrics = None
+
+        is_large_commit_suspicious = future_commit_analysis.result()
+        resultG = future_log_analysis.result()
+        code_metrics = future_code_metrics.result() if future_code_metrics else {"avg_function_length": 0, "comment_ratio": 0}
+
+    try:
+        user_data = {
+            "commit_count": resultG["commit_count"],
+            "average_commit_interval": resultG["average_commit_interval"],
+            "work_duration": resultG["total_work_duration"],
+            "avg_function_length": code_metrics["avg_function_length"],
+            "comment_ratio": code_metrics["comment_ratio"],
+            "is_large_commit_suspicious": is_large_commit_suspicious
+        }
+    except Exception:
+        user_data = {
+            "commit_count": 0,
+            "average_commit_interval": 0,
+            "work_duration": 0,
+            "avg_function_length": 0,
+            "comment_ratio": 0,
+            "is_large_commit_suspicious": False
+        }
+
+    return (user, user_data)
+
+def get_git_analytics():
+    """
+    Scansiona la cartella degli utenti e raccoglie le metriche Git e del codice sorgente.
+    L'elaborazione per ogni utente viene parallelizzata con un ProcessPoolExecutor,
+    mentre all'interno di ogni processo, un ThreadPoolExecutor gestisce le operazioni pesanti.
+    """
+    analytics = {}
     commit_counts = []
     avg_intervals = []
     work_durations = []
     function_lengths = []
     comment_ratios = []
 
-    for user in os.listdir(BASE_DIR):
-        user_path = os.path.join(BASE_DIR, user, "c")
+    users = os.listdir(BASE_DIR)
+    with ProcessPoolExecutor() as executor:
+        results = list(executor.map(process_user, users))
 
-        if not os.path.isdir(user_path):
+    # Raccoglie i risultati validi
+    for res in results:
+        if res is None:
             continue
-
-        subfolders = [f for f in os.listdir(user_path) if os.path.isdir(os.path.join(user_path, f)) and f != "sandbox"]
-
-        if not subfolders:
-            continue
-
-        valid_folder = os.path.join(user_path, subfolders[0], ".git")
-        is_large_commit_suspicious = detect_large_commit_spike(valid_folder)
-
-        if not os.path.exists(valid_folder):
-            continue
-
-        resultG = get_average_commit_interval_from_logs(valid_folder)
-
-        # Trova il file .c per l'utente
-        c_files = [f for f in os.listdir(os.path.join(user_path, subfolders[0])) if f.endswith(".c")]
-        c_file_path = os.path.join(user_path, subfolders[0], c_files[0]) if c_files else None
-
-        if c_file_path:
-            code_metrics = detect_ai_generated_code(c_file_path)
-        else:
-            code_metrics = {
-                "avg_function_length": 0,
-                "comment_ratio": 0
-            }
-
-        try:
-            user_data = {
-                "commit_count": resultG["commit_count"],
-                "average_commit_interval": resultG["average_commit_interval"],
-                "work_duration": resultG["total_work_duration"],
-                "avg_function_length": code_metrics["avg_function_length"],
-                "comment_ratio": code_metrics["comment_ratio"],
-                "is_large_commit_suspicious": is_large_commit_suspicious
-            }
-        except Exception:
-            user_data = {
-                "commit_count": 0,
-                "average_commit_interval": 0,
-                "work_duration": 0,
-                "avg_function_length": 0,
-                "comment_ratio": 0,
-                "is_large_commit_suspicious": 0
-
-            }
-
+        user, user_data = res
         analytics[user] = user_data
-
-        # Raccogliamo i dati per il calcolo delle medie globali
         commit_counts.append(user_data["commit_count"])
         avg_intervals.append(user_data["average_commit_interval"])
         work_durations.append(user_data["work_duration"])
         function_lengths.append(user_data["avg_function_length"])
         comment_ratios.append(user_data["comment_ratio"])
 
-    # Se non ci sono dati sufficienti, restituisci solo l'analytics base
     if len(commit_counts) < 2:
         return analytics
 
-    # Calcola medie e deviazioni standard
     global_metrics = {
         "mean_commit_count": float(np.mean(commit_counts)),
         "mean_avg_interval": float(np.mean(avg_intervals)),
@@ -257,22 +309,17 @@ def get_git_analytics():
         "std_work_duration": float(np.std(work_durations))
     }
 
-    # Identifica utenti con comportamento anomalo
     for user, data in analytics.items():
         is_suspicious = (
             abs(data["commit_count"] - global_metrics["mean_commit_count"]) > global_metrics["std_commit_count"] * 2 or
             abs(data["average_commit_interval"] - global_metrics["mean_avg_interval"]) > global_metrics["std_avg_interval"] * 2 or
             abs(data["work_duration"] - global_metrics["mean_work_duration"]) > global_metrics["std_work_duration"] * 2
         )
-
-        # 🔹 CONVERSIONE bool_ di NumPy in bool standard di Python
         analytics[user]["is_ai_generated_behavior"] = bool(is_suspicious)
 
-    # Aggiunge le metriche globali per confronto
     analytics["global_metrics"] = global_metrics
 
     return analytics
-
 
 
 def get_users_list():
