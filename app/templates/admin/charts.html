@@ -153,7 +153,12 @@
         <div id="uploadStatus" class="mt-3"></div>
     </div>
     <div class="container mt-4">
-
+        <div class="form-group">
+            <label for="turnoSelect">Turno</label>
+            <select id="turnoSelect" class="form-control w-auto">
+                <!-- Popolato dinamicamente -->
+            </select>
+        </div>
 
         <h3 class="text-center text-primary">Lista Studenti </h3>
 
@@ -176,13 +181,26 @@
     </div>
 
     <script>
-        async function fetchAnalytics() {
+
+
+        async function fetchAnalytics(turnoId) {
             // Mostra l'overlay di caricamento
             document.getElementById("loading-overlay").classList.add("active");
 
             try {
-                const response = await fetch('/api/git-analytics');
+          
+                const response = await fetch('/api/git-analytics', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ shift_id: turnoId })
+                });
+
                 const data = await response.json();
+
+
+
 
                 const users = Object.keys(data).filter(user => user !== "global_metrics");
                 const globalMetrics = data.global_metrics;
@@ -281,8 +299,37 @@
                 }
             });
         }
+        loadTurni();
 
-        fetchAnalytics();
+// 2) Al cambio di turno, carica gli utenti
+$('#turnoSelect').on('change', function () {
+    let turnoId = $(this).val();
+    fetchAnalytics(turnoId);
+});
+
+
+function loadTurni() {
+            $.ajax({
+                url: '/api/get-turni',
+                method: 'GET',
+                success: function (data) {
+                    // data dovrebbe essere un array di {id:..., nome:...} o simile
+                    let turnoSelect = $('#turnoSelect');
+                    turnoSelect.empty();
+                    turnoSelect.append('<option value="">Seleziona un turno</option>');
+
+                    turnoSelect.append('<option value="all">Tutti i turni</option>');
+                    data.forEach(turno => {
+                        turnoSelect.append(`<option value="${turno}">Turno ${turno}</option>`);
+                    });
+                },
+                error: function (err) {
+                    alert('Errore nel caricamento dei turni');
+                    console.error(err);
+                }
+            });
+        }
+        fetchAnalytics(turnoSelect.val());
     </script>
 
     <!-- <div class="container mt-4">

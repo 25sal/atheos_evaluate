@@ -116,10 +116,15 @@
 
         <!-- Tabella utenti -->
         <h3 class="text-primary">Utenti</h3>
-        <button class="btn btn-primary mb-3" id="assegnaTracceBtn" disabled>
-            Re-Assegna Tracce
-        </button>
-        <div class="mb-3">
+        <div class="d-flex align-items-center mb-3">
+            <button class="btn btn-primary mr-3" id="assegnaTracceBtn" disabled>
+                Re-Assegna Tracce
+            </button>
+        
+            <select id="tracciaSelect" class="form-control w-auto mr-3">
+                <option value="">Seleziona ID Traccia</option>
+            </select>
+        
             <button id="btnInfTriennali" class="btn btn-info mr-2">
                 Seleziona Informatici Triennali
             </button>
@@ -130,6 +135,7 @@
                 Seleziona Biomedici
             </button>
         </div>
+        
         <div class="table-responsive">
             <table class="table table-light table-striped" id="usersTable">
                 <thead class="table-primary">
@@ -137,6 +143,7 @@
                         <th>Matricola</th>
                         <th>Nome</th>
                         <th>Cognome</th>
+                        <th>ID Traccia Attuale</th>
                         <th>Assegnato</th>
                         <th>Seleziona</th>
                     </tr>
@@ -237,6 +244,7 @@
                     <button type="button" class="btn btn-success" id="confermaAssegnazioneBtn">
                         Re-Assegna
                     </button>
+
                 </div>
             </div>
         </div>
@@ -342,6 +350,44 @@
             });
         }
 
+        // Funzione per estrarre gli ID traccia unici dalla tabella utenti
+        function populateTracciaDropdown() {
+            let tracciaIds = new Set();  // Usa un Set per evitare duplicati
+            $('#usersTable tbody tr').each(function () {
+                let tracciaId = $(this).find('td:nth-child(4)').text().trim();  // Colonna "ID Traccia Attuale"
+                if (tracciaId) {
+                    tracciaIds.add(tracciaId);
+                }
+            });
+
+            // Popola il dropdown
+            let tracciaSelect = $('#tracciaSelect');
+            tracciaSelect.empty();
+            tracciaSelect.append('<option value="">Seleziona ID Traccia</option>');
+
+            tracciaIds.forEach(id => {
+                tracciaSelect.append(`<option value="${id}">${id}</option>`);
+            });
+        }
+
+        // Seleziona gli utenti con l'ID traccia scelto
+        $('#tracciaSelect').on('change', function () {
+            let selectedTracciaId = $(this).val();
+            $('.user-select').prop('checked', false);  // Deseleziona tutti gli utenti
+
+            if (selectedTracciaId) {
+                $('#usersTable tbody tr').each(function () {
+                    let tracciaIdCell = $(this).find('td:nth-child(4)').text().trim();
+                    if (tracciaIdCell === selectedTracciaId) {
+                        $(this).find('.user-select').prop('checked', true);
+                    }
+                });
+            }
+        });
+
+        // Popola il dropdown all'avvio, dopo il caricamento degli utenti
+
+
         /** Carica la lista degli utenti per un dato turno */
         function loadUsersByTurno(turnoId) {
             if (!turnoId) {
@@ -369,6 +415,7 @@
             <td>${user.matricola}</td>
             <td>${user.nome}</td>
             <td>${user.cognome}</td>
+            <td>${user.traccia_id}</td>
             <td class="text-center">${assignedIcon}</td>
             <td class="text-center">
               <input 
@@ -381,9 +428,10 @@
         `);
                         tbody.append(tr);
                     });
-
                     // Se ci sono utenti, abilita il bottone "Assegna Tracce"
                     $('#assegnaTracceBtn').prop('disabled', data.length === 0);
+                    populateTracciaDropdown();
+
                 },
                 error: function (err) {
                     alert('Errore nel caricamento degli utenti');
@@ -520,6 +568,9 @@
             // Apri il modal
             $('#tracceModal').modal('show');
         });
+
+
+
     </script>
 
 </body>

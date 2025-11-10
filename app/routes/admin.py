@@ -1,5 +1,7 @@
 from collections import defaultdict
+import glob
 import time
+import zipfile
 from flask import jsonify, render_template, redirect, url_for, flash, request, session, make_response, send_file, Blueprint
 import pandas as pd
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
@@ -31,6 +33,99 @@ def admin_index():
 
 
 BASE_DIR = "/home/evaluatex/users"  # Cartella base degli utenti
+BASE_EXERCISES_DIR = '/home/evaluatex/data/exercises'
+
+
+
+
+@admin_bp.route('/admin/add_exercise', methods=['GET'])
+@login_required
+@admin_role.require(401)
+def add_exercise():
+    return render_template("admin/add_exercise.html")
+
+
+@admin_bp.route('/api/upload-exercise', methods=['POST'])
+def upload_exercise():
+    # Recupera il linguaggio e il titolo dal form
+    language = request.form.get('language')
+    title = request.form.get('title')
+    if language not in ['c', 'cpp', 'vhdl']:
+        return jsonify({'error': 'Linguaggio non valido. Scegli tra c, cpp, vhdl.'}), 400
+    if not title:
+        return jsonify({'error': 'Il titolo è obbligatorio.'}), 400
+
+    # Verifica che il file sia stato inviato
+    if 'file' not in request.files:
+        return jsonify({'error': 'Nessun file caricato.'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Nessun file selezionato.'}), 400
+
+    # Salva il file zip in modo sicuro
+    filename = secure_filename(file.filename)
+    language_dir = os.path.join(BASE_EXERCISES_DIR, language)
+    os.makedirs(language_dir, exist_ok=True)
+    # Il nome base senza estensione (che useremo anche per la cartella di destinazione)
+    file_basename = os.path.splitext(filename)[0]
+    extract_path = os.path.join(language_dir, file_basename)
+    zip_path = os.path.join(language_dir, filename)
+
+    try:
+        file.save(zip_path)
+        # Estrai il file ZIP rimuovendo il livello della cartella madre se presente
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            members = zip_ref.infolist()
+            # Ottieni il prefisso comune
+            common_prefix = os.path.commonprefix([member.filename for member in members])
+            # Se il prefisso comune termina con "/" (ossia è una cartella) ed è uguale al nome della cartella,
+            # lo rimuoviamo. In caso contrario, non modifichiamo il percorso.
+            prefix = common_prefix if common_prefix.endswith('/') and common_prefix.strip('/') == file_basename else ''
+            for member in members:
+                # Rimuovi il prefisso dalla path del membro se presente
+                member_name = member.filename[len(prefix):] if prefix and member.filename.startswith(prefix) else member.filename
+                # Costruisci il percorso di destinazione: estrai direttamente in extract_path
+                target_path = os.path.join(extract_path, member_name)
+                if member.is_dir():
+                    os.makedirs(target_path, exist_ok=True)
+                else:
+                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                    with open(target_path, "wb") as outfile:
+                        outfile.write(zip_ref.read(member))
+        os.remove(zip_path)
+    except Exception as e:
+        return jsonify({'error': f'Errore durante l\'estrazione del file zip: {str(e)}'}), 500
+
+    # Cerca il primo file HTML all'interno della cartella estratta per usarlo come description
+    description = ''
+    for root, dirs, files in os.walk(extract_path):
+        for f in files:
+            if f.endswith('.html'):
+                html_file_path = os.path.join(root, f)
+                try:
+                    with open(html_file_path, 'r', encoding='utf-8', errors='replace') as html_file:
+                        description = html_file.read()
+                    break
+                except Exception:
+                    description = ''
+        if description:
+            break
+
+    # Il campo folder sarà del formato "language/nomezip"
+    folder_field = f"{language}/{file_basename}"
+
+    model_base.upload_exercise(folder_field, language, title, description)
+
+    return jsonify({'message': 'Esercizio caricato correttamente', 'folder': folder_field})
+
+
+
+
+
+
+
+
+
 
 
 @admin_bp.route('/api/detect-ai')
@@ -266,7 +361,7 @@ def process_user(user):
 
     return (user, user_data)
 
-def get_git_analytics():
+def get_git_analytics(shift_id):
     """
     Scansiona la cartella degli utenti e raccoglie le metriche Git e del codice sorgente.
     L'elaborazione per ogni utente viene parallelizzata con un ProcessPoolExecutor,
@@ -280,6 +375,11 @@ def get_git_analytics():
     comment_ratios = []
 
     users = os.listdir(BASE_DIR)
+    if(shift_id != "all"):
+        interesting_users = model_base.get_user_by_turno(shift_id)
+        interesting_users = [item[0] for item in interesting_users]
+        users = [user for user in users if user in interesting_users]
+
     with ProcessPoolExecutor() as executor:
         results = list(executor.map(process_user, users))
 
@@ -358,9 +458,14 @@ def get_user_analytics(username):
 
     return jsonify(get_lines_modified_per_commit(repo_path))
 
-@admin_bp.route('/api/git-analytics')
+
+@admin_bp.route('/api/git-analytics', methods=['POST'])
 def get_analytics():
-    return jsonify(get_git_analytics())
+    request_shift = request.form.get('shift_id')
+
+    return jsonify(get_git_analytics(request_shift))
+
+
 
 @admin_bp.route('/api/get-users')
 def get_users():
@@ -430,7 +535,8 @@ def users_by_turno_assigned():
             "matricola": r[0],
             "nome": r[1],
             "cognome": r[2],
-            "assegnato": r[3]
+            "assegnato": r[3],
+            "traccia_id": r[4]
         }
         data.append(user_dict)
 
@@ -664,7 +770,8 @@ def upload_users():
         for turno_id, file_path in turno_files.items():
             users = import_reservations(file_path)
             passwords = gen_passwords(len(users))
-
+            print(users)
+            print(passwords)
             # Creazione delle prenotazioni con l'ID turno
             model_base.create_reservations(np.hstack((users, passwords)), turno_id)
             model_base.create_bc_passwords(np.hstack((users[:, 0].reshape(-1, 1), passwords[:, 2].reshape(-1, 1))))
@@ -731,9 +838,8 @@ def modifica_assegnazione():
     if desc is None:
         desc = ""
     
-    exercises = model_base.getexercises(isexam=1,  lang=lang)
-    exercise_ids = [exercise[0] for exercise in exercises]
-    print(len(users), exercise_ids)
+    exercise_ids = np.array(json.loads(tracce_json))
+
     for user in users:
         delete_user_dirs(user)
     if rand:
@@ -770,15 +876,42 @@ def create_projects():
     if desc is None:
         desc = ""
     
-    exercises = model_base.getexercises(isexam=1,  lang=lang)
-    exercise_ids = [exercise[0] for exercise in exercises]
-    print(len(users), exercise_ids)
     
+    exercise_ids = np.array(json.loads(tracce_json))
     if rand:
         projects = create_random_projects(len(users),exercise_ids)
         users_new = np.hstack((np.array(users).reshape(-1,1),np.array(projects).reshape(-1,1)))
       
         model_base.create_projects(users_new, lang)
+        #open password csv
+        data_dir = Config.data_dir  # Assumo che Config.data_dir sia definito
+        mappa_valori = {str(id_): valore for id_, valore in users_new}
+        csv_files = glob.glob(os.path.join(data_dir, "passwords_turno_*.csv"))
+
+        for csv_path in csv_files:
+            # Leggi il CSV
+            with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+                reader = list(csv.reader(f, delimiter=','))  # Specifica il delimitatore
+                updated_rows = []
+
+                for row in reader:
+                    id_ = row[0]  # Primo valore della riga è l'ID
+                    new_value = mappa_valori.get(id_, "")  # Se non trovato, lascia vuoto
+
+                    # Assicuriamoci che la riga abbia almeno 5 colonne
+                    while len(row) < 5:
+                        row.append("")
+
+                    # Sovrascriviamo la quinta colonna con il nuovo valore
+                    if(new_value != ""):
+                        row[4] = new_value  
+                    updated_rows.append(row)
+
+                # Sovrascrivi il file con la nuova colonna
+            with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f, delimiter=',')  # Specifica il delimitatore
+                writer.writerows(updated_rows)
+
         prj_dirs = []
         for project in projects:
             prj_dirs.append(model_base.getexercisefolder(project, isexam=1)[0])

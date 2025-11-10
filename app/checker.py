@@ -41,6 +41,8 @@ class Checker:
         result = self.c_builder(user_folder, ex_folder)
         build_logs = result[1]
         ret = result[0]
+        test_logs = '\nTesting:\n'
+        exec_logs = ''
         if ret == 0:
             test_logs = '\nTesting:\n'
             exec_logs = ''
@@ -58,7 +60,7 @@ class Checker:
                 #system('docker exec  --workdir /test wwwtest /test/main');
                 #cmd_array = [Config.data_dir+'/mbox/mbox', '-i', '-s', '-n', '-r', '../sandbox', './main']
                 #in docker no mbox
-                cmd_array = ['./main.exe']
+                cmd_array = ['timeout','-s','9','5','./main.exe']
                 cprocess = subprocess.run(cmd_array, cwd=user_folder, timeout=5, capture_output=True)
                 exec_logs += cprocess.stdout.decode("utf8")
                 exec_logs += cprocess.stderr.decode("utf8")

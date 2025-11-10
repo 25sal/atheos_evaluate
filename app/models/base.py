@@ -293,13 +293,29 @@ def getUsersByTurno(turno):
 
 def getUsersByTurno_AssignedOnly(turno):
     if(turno == 'all'):
-        t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users where has_exercise=1')
+        t = text('SELECT ru.user, ru.first_name, ru.second_name, ru.has_exercise, p.exercise FROM reserved_users ru LEFT JOIN projects p ON ru.user = p.userid WHERE ru.has_exercise = 1;')
         result = db.session.execute(t).fetchall()
         if(result):
             return result
         else:
             return None
-    t = text('SELECT user,first_name,second_name,has_exercise FROM reserved_users WHERE user_group= :val and has_exercise=1')
+    t = text('''
+        SELECT 
+            ru.user, 
+            ru.first_name, 
+            ru.second_name, 
+            ru.has_exercise, 
+            p.exercise 
+        FROM 
+            reserved_users ru
+        LEFT JOIN 
+            projects p 
+        ON 
+            ru.user = p.userid
+        WHERE 
+            ru.user_group = :val 
+            AND ru.has_exercise = 1
+    ''')
     result = db.session.execute(t, {'val':turno}).fetchall()
     if(result):
         return result
@@ -528,6 +544,20 @@ def list_by_turno():
     query = text("SELECT user_group, COUNT(*) as total FROM reserved_users GROUP BY user_group")
     rows = db.session.execute(query).all()
     return rows
+
+
+def upload_exercise(folder, lang, title, description):
+    query = text("INSERT INTO exercises (folder, language, visible, description, isexam, title) VALUES (:folder, :lang, :visible, :description, :isexam, :title)")
+    # visible è sempre 1, isexam è sempre 0
+    db.session.execute(query,{'folder':folder,'lang':lang,'visible':1, 'description': description, 'isexam': 0, 'title': title})
+    db.session.commit()
+
+
+def get_user_by_turno(turno):
+    query = text("SELECT user FROM reserved_users WHERE user_group = :turno")
+    rows = db.session.execute(query, {'turno': turno}).all()
+    return rows
+
 def update_projects(users, lang):
     print(users)
     for user in users:

@@ -232,6 +232,9 @@
 
         <!-- Sezione 2: Gestione Progetti -->
         <h6 class="px-3 mt-3 text-uppercase text-white">Gestione Progetti</h6>
+        <a href="#" class="menu-item" data-target="create-exercises" id="create-exercises">
+            <i class="fas fa-receipt"></i> Crea Esercizi
+        </a>
         <a href="#" class="menu-item" data-target="manage-exercises" id="link-exercises">
             <i class="fas fa-list"></i> Gestisci Esercizi
         </a>
@@ -365,6 +368,15 @@
                         <iframe src="/charts"></iframe>
                     `);
                 }
+                // Se l'utente clicca su "Crea Esercizi"
+                else if (target === 'create-exercises') {
+                    $('#main-content').html(`
+                        <h3 class="text-primary">Carica Nuovo Esercizio</h3>
+
+                        <iframe src="/admin/add_exercise"></iframe>
+                    `);
+                }
+
                 // Se l'utente clicca su "New Accounts"
                 else if (target === 'new-accounts') {
                     $('#main-content').html(`
